@@ -19,13 +19,13 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
   const t=copy[lang];
   const dishes=[['MAGRET DE CANARD','Jus réduit BBQ · patates douces · betteraves','21 €'],['RISOTTO','Pesto aux herbes · parmesan','18 €'],['PIÈCE DE BŒUF','Sélection du moment · cuisson au feu de bois','28 €']];
   return <main>
-    <header className="header"><Link className="logo" href={`/${lang}#top`}>NOMADE</Link><nav>{t.nav.map((n,i)=><a key={n} href={['#house','#menu','#events','#contact'][i]}>{n}</a>)}</nav><div className="tools"><div className="langs">{(['fr','en','es'] as const).map(l=><Link key={l} className={lang===l?'active':''} href={`/${l}`}>{l.toUpperCase()}</Link>)}</div></div></header>
+    <header className="header"><Link className="logo" href={`/${lang}#top`} aria-label="Nomade"><img src="/nomade-logo-light.svg" alt="NOMADE" /></Link><nav>{t.nav.map((n,i)=><a key={n} href={['#house','#menu','#events','#contact'][i]}>{n}</a>)}</nav><div className="tools"><div className="langs">{(['fr','en','es'] as const).map(l=><Link key={l} className={lang===l?'active':''} href={`/${l}`}>{l.toUpperCase()}</Link>)}</div></div></header>
     <details className="mobileMenu">
       <summary aria-label="Menu"><span></span><span></span><span></span></summary>
       <div className="mobileNav">{t.nav.map((n,i)=><a key={n} href={['#house','#menu','#events','#contact'][i]}>{n}</a>)}<div className="langs mobileLangs">{(['fr','en','es'] as const).map(l=><Link key={l} className={lang===l?'active':''} href={`/${l}`}>{l.toUpperCase()}</Link>)}</div></div>
     </details>
 
-    <section id="top" className="hero"><div className="heroMedia"><div className="fireOrb"/><div className="embers"/></div><div className="heroContent"><span>{t.heroKicker}</span><h1>NOMADE</h1><p className="heroTitle">{t.heroTitle}</p><p className="heroSub">{t.heroSub}</p><a className="button" href="#contact">{t.reserve}<ArrowUpRight size={16}/></a></div><a className="scroll" href="#house"><ArrowDown size={16}/>{t.discover}</a></section>
+    <section id="top" className="hero"><div className="heroMedia"><div className="fireOrb"/><div className="embers"/></div><div className="heroContent"><span>{t.heroKicker}</span><h1 className="heroLogo"><img src="/nomade-logo-light.svg" alt="NOMADE" /></h1><p className="heroTitle">{t.heroTitle}</p><p className="heroSub">{t.heroSub}</p><a className="button" href="#contact">{t.reserve}<ArrowUpRight size={16}/></a></div><a className="scroll" href="#house"><ArrowDown size={16}/>{t.discover}</a></section>
 
     <section id="house" className="split section"><div><p className="eyebrow">01 / NOMADE</p><h2>{t.fire}</h2><p className="lead">{t.fireText}</p><a className="textLink" href="#menu">{t.signatures} <ArrowUpRight size={16}/></a></div><div className="visual fireVisual"><div className="fireLines"/></div></section>
 
@@ -37,7 +37,7 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
 
     <section id="contact" className="contact section"><div><p className="eyebrow">05 / FOIX</p><h2>{t.find}</h2><p className="address">42 Rue des Chapeliers<br/>09000 Foix, France</p><p className="muted">05 54 56 63 48<br/>contact@nomade-foix.fr</p><a className="button" href="mailto:contact@nomade-foix.fr">{t.reserve}<ArrowUpRight size={16}/></a></div><div className="map"><MapPin/><span>FOIX</span></div></section>
 
-    <footer><div className="logo">NOMADE</div><div>Restaurant · Bar · Foix</div><Link href={`/${lang}/mentions-legales`}>Mentions légales</Link><Link href={`/${lang}/confidentialite`}>Confidentialité</Link><a href="#top">{t.discover} <ArrowUpRight size={14}/></a><a href="#" aria-label="Instagram"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg></a></footer>
+    <footer><div className="logo"><img src="/nomade-logo-light.svg" alt="NOMADE" /></div><div>Restaurant · Bar · Foix</div><Link href={`/${lang}/mentions-legales`}>Mentions légales</Link><Link href={`/${lang}/confidentialite`}>Confidentialité</Link><a href="#top">{t.discover} <ArrowUpRight size={14}/></a><a href="#" aria-label="Instagram"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg></a></footer>
   </main>
 }
 
