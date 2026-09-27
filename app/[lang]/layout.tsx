@@ -1,6 +1,4 @@
 import type { Metadata } from 'next';
-import '../../app/globals.css';
-
 const meta = {
   fr: { title: 'NOMADE — Restaurant · Bar · Foix', description: 'Cuisine au feu, produits locaux, influences du monde.' },
   en: { title: 'NOMADE — Restaurant · Bar · Foix', description: 'Fire cooking, local produce and global influences.' },
