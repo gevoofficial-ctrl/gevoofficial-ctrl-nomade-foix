@@ -1,0 +1,62 @@
+name: Deploy Nomade staging
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: nomade-staging-deploy
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy to o2switch
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Configure SSH
+        shell: bash
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.O2SWITCH_SSH_KEY }}
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H bouclier.o2switch.net >> ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: Deploy on o2switch
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          ssh -o BatchMode=yes -o StrictHostKeyChecking=yes bebi3837@bouclier.o2switch.net 'bash -se' <<'REMOTE'
+          set -euo pipefail
+
+          cd ~/dev.nomade-foix.fr
+
+          echo "== Git =="
+          git fetch origin main
+          git reset --hard origin/main
+
+          echo "== Node environment =="
+          source ~/nodevenv/dev.nomade-foix.fr/22/bin/activate
+
+          echo "== Dependencies =="
+          npm install --include=dev
+
+          echo "== Build =="
+          npm run build -- --webpack
+
+          echo "== Restart Passenger =="
+          mkdir -p tmp
+          touch tmp/restart.txt
+
+          echo "== Deployment complete =="
+          REMOTE
