@@ -1,4 +1,6 @@
 import type { Metadata } from 'next';
+import CookieBanner from '../../components/CookieBanner';
+
 const meta = {
   fr: { title: 'NOMADE — Restaurant · Bar · Foix', description: 'Cuisine au feu, produits locaux, influences du monde.' },
   en: { title: 'NOMADE — Restaurant · Bar · Foix', description: 'Fire cooking, local produce and global influences.' },
@@ -20,6 +22,7 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
 }
 
 export default async function LangLayout({ children, params }: { children: React.ReactNode; params: Promise<{ lang: string }> }) {
-  const { lang } = await params;
-  return <>{children}</>;
+  const { lang: rawLang } = await params;
+  const lang = (['fr', 'en', 'es'] as const).includes(rawLang as 'fr' | 'en' | 'es') ? (rawLang as 'fr' | 'en' | 'es') : 'fr';
+  return <>{children}<CookieBanner lang={lang} /></>;
 }
