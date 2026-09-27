@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowUpRight, Instagram, MapPin } from 'lucide-react';
+import { ArrowDown, ArrowUpRight, MapPin } from 'lucide-react';
 import Link from 'next/link';
 
 const copy = {
@@ -34,10 +34,9 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
 
     <section id="contact" className="contact section"><div><p className="eyebrow">05 / FOIX</p><h2>{t.find}</h2><p className="address">42 Rue des Chapeliers<br/>09000 Foix, France</p><p className="muted">05 54 56 63 48<br/>contact@nomade-foix.fr</p><a className="button" href="mailto:contact@nomade-foix.fr">{t.reserve}<ArrowUpRight size={16}/></a></div><div className="map"><MapPin/><span>FOIX</span></div></section>
 
-    <footer><div className="logo">NOMADE</div><div>Restaurant · Bar · Foix</div><a href="#top">{t.discover} <ArrowUpRight size={14}/></a><a href="#"><Instagram size={17}/></a></footer>
+    <footer><div className="logo">NOMADE</div><div>Restaurant · Bar · Foix</div><a href="#top">{t.discover} <ArrowUpRight size={14}/></a><a href="#" aria-label="Instagram"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg></a></footer>
   </main>
 }
-
 
 export function generateStaticParams() {
   return [{ lang: 'fr' }, { lang: 'en' }, { lang: 'es' }];
