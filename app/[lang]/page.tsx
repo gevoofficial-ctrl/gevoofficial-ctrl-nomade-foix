@@ -37,3 +37,8 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
     <footer><div className="logo">NOMADE</div><div>Restaurant · Bar · Foix</div><a href="#top">{t.discover} <ArrowUpRight size={14}/></a><a href="#"><Instagram size={17}/></a></footer>
   </main>
 }
+
+
+export function generateStaticParams() {
+  return [{ lang: 'fr' }, { lang: 'en' }, { lang: 'es' }];
+}
