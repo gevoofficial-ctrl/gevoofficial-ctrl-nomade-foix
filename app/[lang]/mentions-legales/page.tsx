@@ -1,16 +1,17 @@
 import { ArrowUpRight } from 'lucide-react';
 import Link from 'next/link';
 
+// TODO: Replace these display placeholders only after the restaurant validates every legal detail.
 const legal = {
   companyName: '[Raison sociale — ex. SARL Nomade]',
   legalForm: '[Forme juridique — ex. SARL, EI...]',
   capital: '[Capital social, si société]',
-  address: '[Adresse à confirmer]',
+  address: '42 Rue des Chapeliers, 09000 Foix, France',
   rcs: '[N° SIRET / RCS]',
   vat: '[N° TVA intracommunautaire, si applicable]',
   publisherName: '[Nom du responsable de publication]',
-  phone: '[Téléphone à confirmer]',
-  email: '[E-mail à confirmer]',
+  phone: '05 54 56 63 48',
+  email: 'contact@nomade-foix.fr',
   hostName: '[Nom de l’hébergeur — ex. Vercel Inc.]',
   hostAddress: '[Adresse de l’hébergeur]',
   hostPhone: '[Téléphone de l’hébergeur, si disponible]'
