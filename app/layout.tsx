@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import './site.css';
+import './nomade.css';
 
 export const metadata: Metadata = {
   title: 'NOMADE — Restaurant · Bar · Foix',
