@@ -14,13 +14,19 @@ const copy = {
 export default function CookieBanner({ lang }: { lang: 'fr' | 'en' | 'es' }) {
   const [visible, setVisible] = useState(false);
   const t = copy[lang] ?? copy.fr;
+
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) { setVisible(true); return; }
-      const { timestamp } = JSON.parse(raw);
-      if (Date.now() - timestamp > MAX_AGE_MS) setVisible(true);
-    } catch { setVisible(true); }
+    const timer = window.setTimeout(() => {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        const { timestamp } = raw ? JSON.parse(raw) : {};
+        setVisible(!timestamp || Date.now() - timestamp > MAX_AGE_MS);
+      } catch {
+        setVisible(true);
+      }
+    }, 0);
+
+    return () => window.clearTimeout(timer);
   }, []);
   const choose = (value: 'accepted' | 'refused') => {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ value, timestamp: Date.now() })); } catch {}
@@ -28,7 +34,7 @@ export default function CookieBanner({ lang }: { lang: 'fr' | 'en' | 'es' }) {
   };
   if (!visible) return null;
   return (
-    <div className="cookieBanner" role="dialog" aria-label="Cookies">
+    <div className="cookieBanner" role="region" aria-label="Cookies">
       <p>{t.text}{' '}<Link className="cookieLink" href={`/${lang}/confidentialite`}>{t.more}</Link></p>
       <div className="cookieActions">
         <button className="button ghost" onClick={() => choose('refused')}>{t.reject}</button>
