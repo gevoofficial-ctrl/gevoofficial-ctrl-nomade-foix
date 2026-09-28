@@ -9,7 +9,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="fr">
       <head>
-        <link rel="stylesheet" href="/nomade.css?v=20260928-2" />
+        <link rel="stylesheet" href="/nomade-v3.css" />
       </head>
       <body>{children}</body>
     </html>
