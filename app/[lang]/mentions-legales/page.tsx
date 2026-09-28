@@ -1,17 +1,17 @@
 import { ArrowUpRight } from 'lucide-react';
 import Link from 'next/link';
 
-// TODO: Replace these display placeholders only after the restaurant validates every legal detail.
+// Restaurant legal details validated by NOMADE. Hosting details remain pending confirmation.
 const legal = {
-  companyName: '[Raison sociale — ex. SARL Nomade]',
-  legalForm: '[Forme juridique — ex. SARL, EI...]',
-  capital: '[Capital social, si société]',
+  companyName: 'SAS NOMADE',
+  legalForm: 'SAS',
+  capital: '1 000 €',
   address: '42 Rue des Chapeliers, 09000 Foix, France',
-  rcs: '[N° SIRET / RCS]',
-  vat: '[N° TVA intracommunautaire, si applicable]',
-  publisherName: '[Nom du responsable de publication]',
-  phone: '05 54 56 63 48',
-  email: 'contact@nomade-foix.fr',
+  rcs: '943 332 155 00010',
+  vat: 'FR40 943 332 155',
+  publisherName: 'CHLOIAN KAMO',
+  phone: '07 45 26 28 23',
+  email: 'nomaderestaubar@gmail.com',
   hostName: '[Nom de l’hébergeur — ex. Vercel Inc.]',
   hostAddress: '[Adresse de l’hébergeur]',
   hostPhone: '[Téléphone de l’hébergeur, si disponible]'
