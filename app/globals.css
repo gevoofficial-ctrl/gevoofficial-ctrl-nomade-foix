@@ -8,10 +8,10 @@
 
 
 /* NOMADE branded print — subtle extension of the interior identity */
-.brandPrint{position:absolute;inset:0;background-image:url('/nomade-print.webp');background-repeat:no-repeat;background-position:center;background-size:cover;opacity:.09;mix-blend-mode:screen;pointer-events:none;filter:contrast(.9)}
+.brandPrint{position:absolute;inset:0;background-image:url('/nomade-print-seamless.webp');background-repeat:no-repeat;background-position:center;background-size:cover;opacity:.09;mix-blend-mode:screen;pointer-events:none;filter:contrast(.9)}
 .heroPrint{opacity:.075;background-position:left center;background-size:72% auto;-webkit-mask-image:linear-gradient(90deg,#000 0 70%,transparent 100%);mask-image:linear-gradient(90deg,#000 0 70%,transparent 100%)}
 .printSection{position:relative;overflow:hidden}
-.printSection::before{content:'';position:absolute;inset:0;background-image:url('/nomade-print.webp');background-repeat:no-repeat;background-position:left center;background-size:62% auto;opacity:.055;mix-blend-mode:screen;pointer-events:none}
+.printSection::before{content:'';position:absolute;inset:0;background-image:url('/nomade-print-seamless.webp');background-repeat:no-repeat;background-position:left center;background-size:62% auto;opacity:.055;mix-blend-mode:screen;pointer-events:none}
 .printSection>*{position:relative;z-index:1}
-.localCopy::before{content:'';position:absolute;inset:0;background-image:url('/nomade-print.webp');background-size:100% auto;background-position:center;opacity:.06;mix-blend-mode:screen;pointer-events:none}
+.localCopy::before{content:'';position:absolute;inset:0;background-image:url('/nomade-print-seamless.webp');background-size:100% auto;background-position:center;opacity:.06;mix-blend-mode:screen;pointer-events:none}
 @media(max-width:800px){.heroPrint{opacity:.055;background-size:130% auto;background-position:left 35%}.printSection::before{background-size:150% auto;opacity:.04}}
