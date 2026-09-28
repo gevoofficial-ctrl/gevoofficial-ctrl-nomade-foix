@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import './nomade.css';
 
 export const metadata: Metadata = {
   title: 'NOMADE — Restaurant · Bar · Foix',
@@ -7,5 +6,12 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  return <html lang="fr"><body>{children}</body></html>;
+  return (
+    <html lang="fr">
+      <head>
+        <link rel="stylesheet" href="/nomade.css?v=20260928-2" />
+      </head>
+      <body>{children}</body>
+    </html>
+  );
 }
