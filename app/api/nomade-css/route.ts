@@ -36,10 +36,10 @@ const photoCss = `
   .houseCopy{padding:32px 7vw 36px}
   .houseCopy h2{font-size:clamp(38px,8.5vw,49px);margin:18px 0}
   .houseCopy .textLink{margin-top:20px}
-  .split .housePhoto{aspect-ratio:1/1}
+  .split .housePhoto{width:100%;height:88vw;min-height:0;aspect-ratio:auto}
   .local.section{padding-top:0}
-  .local .localCopy{grid-row:1}
-  .winePhoto{min-height:0;aspect-ratio:4/5}
+  .local .localCopy{grid-row:auto}
+  .winePhoto{width:100%;height:110vw;min-height:0;aspect-ratio:auto}
   .localCopy{padding:32px 7vw 36px;background:#191711}
   .localCopy::before{content:none}
   .localCopy .eyebrow{margin-top:0}
