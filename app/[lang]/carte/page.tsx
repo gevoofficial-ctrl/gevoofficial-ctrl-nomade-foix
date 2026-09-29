@@ -19,7 +19,7 @@ export default async function Carte({params}: {params: Promise<{lang:string}>}) 
     <Link className="textLink" href={`/${lang}`}>← {t.back}</Link>
     <div className="legalHead"><p className="eyebrow">NOMADE · FOIX</p><h1>{t.title}</h1></div>
     {items.length === 0 && <p className="muted">{lang === 'fr' ? 'La carte arrive bientôt.' : lang === 'en' ? 'The menu is coming soon.' : 'La carta estará disponible pronto.'}</p>}
-    {categories.map(category => <section key={category} className="menuCategory"><h2>{items.find(d => d.category === category)?.categoryTranslations?.[lang] || category}</h2>
+    {categories.map(category => <section key={category} className="menuCategory"><h2>{category}</h2>
       {items.filter(d => d.category === category).map(d => { const content = localized(d,lang); return <article className="menuItem" key={d.id}>
         {d.videoUrl ? <video className="menuItemMedia" controls preload="none" poster={d.imageUrl || undefined} src={d.videoUrl} /> : d.imageUrl && <div className="menuItemMedia" style={{backgroundImage:`url('${d.imageUrl.replaceAll("'", '%27')}')`}}/>}
         <div><h3>{content.name}</h3><p>{content.description}</p><small>{d.allergens.length > 0 && `${t.allergens}: ${d.allergens.join(', ')} · `}{[d.vegetarian && 'Vegetarian',d.vegan && 'Vegan',d.glutenFree && 'Gluten-free'].filter(Boolean).join(' · ')}</small>{!d.available && <p>{t.unavailable}</p>}</div>

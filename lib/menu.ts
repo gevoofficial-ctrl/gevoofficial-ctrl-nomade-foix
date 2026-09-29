@@ -99,5 +99,6 @@ export async function updateMenu(change: (items: Dish[]) => Dish[]): Promise<Dis
 
 export function sortedMenu(items: Dish[]) { return [...items].sort((a,b) => a.order - b.order || a.translations.fr.name.localeCompare(b.translations.fr.name)); }
 export function localized(d: Dish, lang: Lang): Translation {
-  return d.translations[lang].name ? d.translations[lang] : d.translations.fr;
+  void lang;
+  return d.translations.fr;
 }

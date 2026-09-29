@@ -22,7 +22,6 @@ environment variables in the Passenger/Node application configuration before use
 
 - `NOMADE_ADMIN_PASSWORD`: a unique strong password for the restaurant owner.
 - `NOMADE_ADMIN_SECRET`: a random string of at least 32 characters for session signing.
-- `OPENAI_API_KEY`: a server-side API key for automatic FR → EN/ES menu translations.
 - `NOMADE_MENU_FILE` (optional): an absolute path to `menu.json` outside the checkout.
 
 The default data path is `data/menu.json` in the application directory. It is ignored by Git;
@@ -31,8 +30,6 @@ process, and back it up independently. The staging deploy resets tracked Git fil
 not delete this ignored directory. Never commit credentials or restaurant data to Git.
 
 The public `/fr/carte`, `/en/carte`, `/es/carte` pages and homepage signatures render
-directly from this data on each request. Creating a dish (or editing its French text)
-generates English and Spanish names, descriptions and category labels before saving.
-If translation fails, the dish is not saved; existing translations can be corrected
-manually in the advanced editor. This API usage is billed separately from ChatGPT Plus.
-No unapproved sample dishes or prices are seeded.
+directly from this data on each request. The menu is entered and displayed in French
+on all three language versions of the site. Other interface copy remains localized.
+No translation API key is needed. No unapproved sample dishes or prices are seeded.

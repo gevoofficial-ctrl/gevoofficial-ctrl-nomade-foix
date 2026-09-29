@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { authorized, sameOrigin } from '../../../../lib/admin-auth';
 import { readMenu, sortedMenu, updateMenu, validateDish } from '../../../../lib/menu';
-import { withAutomaticTranslations } from '../../../../lib/translate-menu';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -15,8 +14,8 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     if (JSON.stringify(body).length > 12000) return NextResponse.json({ error: 'Dish too large' }, { status: 413 });
-    const dish = validateDish(await withAutomaticTranslations(validateDish({ ...body, id: undefined })));
+    const dish = validateDish({ ...body, id: undefined });
     await updateMenu(items => [...items, dish]);
     return NextResponse.json(dish, { status: 201 });
-  } catch (e) { return NextResponse.json({ error: (e as Error).message }, { status: (e as Error).message.includes('OPENAI_API_KEY') ? 503 : 400 }); }
+  } catch (e) { return NextResponse.json({ error: (e as Error).message }, { status: 400 }); }
 }
