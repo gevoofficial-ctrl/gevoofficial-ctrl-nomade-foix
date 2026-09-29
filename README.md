@@ -36,17 +36,16 @@ No translation API key is needed. No unapproved sample dishes or prices are seed
 
 ## Reservation requests (staging)
 
-The booking form sends an email request; it does not confirm a table automatically.
-Configure the following variables in the server's Node application environment:
+The booking form emails a request; it does not confirm a table automatically. The
+confirmed sender and recipient are `nomaderestaubar@gmail.com`. Gmail SMTP defaults to
+`smtp.gmail.com:465` with TLS. In the server's Node application environment, set:
 
-- `NOMADE_SMTP_HOST`, `NOMADE_SMTP_PORT` (465 for implicit TLS or 587 for STARTTLS)
-- `NOMADE_SMTP_SECURE=true` if your SMTP server uses implicit TLS on a nonstandard port
-- `NOMADE_SMTP_USER`, `NOMADE_SMTP_PASSWORD`
-- `NOMADE_SMTP_FROM`: a sender address authorized by that mailbox
-- `NOMADE_RESERVATIONS_TO` (optional): overrides the confirmed recipient
-  `nomaderestaubar@gmail.com`
+- `NOMADE_SMTP_PASSWORD`: a Google app password for this Gmail account (not its normal password).
 
-Credentials remain on the server; the repository contains none. Until these values are
-configured, the form shows a phone fallback and the endpoint refuses submissions.
-The recipient was confirmed by the restaurant. Configure the SMTP sender account before
-enabling delivery; do not put its password in Git.
+Google requires 2-Step Verification to create an app password:
+https://support.google.com/accounts/answer/185833
+
+Optional overrides are `NOMADE_SMTP_HOST`, `NOMADE_SMTP_PORT`, `NOMADE_SMTP_SECURE=true`
+(implicit TLS on a nonstandard port), `NOMADE_SMTP_USER`, `NOMADE_SMTP_FROM`, and
+`NOMADE_RESERVATIONS_TO`. The password remains on the server, never in Git. Until it is
+configured, the form offers a phone fallback and refuses submissions.

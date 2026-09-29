@@ -29,12 +29,12 @@ export async function POST(request: NextRequest) {
       !Number.isInteger(guests) || guests < 1 || guests > 50) {
     return NextResponse.json({ error:'Please check the reservation details' }, { status:400 });
   }
-  const host = process.env.NOMADE_SMTP_HOST;
+  const host = process.env.NOMADE_SMTP_HOST || 'smtp.gmail.com';
   const port = Number(process.env.NOMADE_SMTP_PORT || 465);
   const secure = process.env.NOMADE_SMTP_SECURE === 'true' || port === 465;
-  const user = process.env.NOMADE_SMTP_USER;
+  const user = process.env.NOMADE_SMTP_USER || 'nomaderestaubar@gmail.com';
   const pass = process.env.NOMADE_SMTP_PASSWORD;
-  const from = process.env.NOMADE_SMTP_FROM;
+  const from = process.env.NOMADE_SMTP_FROM || user;
   const to = process.env.NOMADE_RESERVATIONS_TO || 'nomaderestaubar@gmail.com';
   if (!host || !user || !pass || !from || !to || !Number.isInteger(port) || port < 1 || port > 65535) {
     return NextResponse.json({ error:'Reservations are temporarily unavailable. Please call the restaurant.' }, { status:503 });
