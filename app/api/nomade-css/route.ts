@@ -6,8 +6,10 @@ const css = "@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@
 const photoCss = `
 .printSection::before{background-size:1150px auto}
 .localCopy::before{background-size:1050px auto}
-.heroMedia.heroMediaEmpty{background:var(--bg)}
-.heroMediaEmpty::before{content:none}
+.heroMediaVideo{position:absolute;inset:0;background:#19120d}
+.heroVideo{position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:cover;object-position:55% center}
+.heroMediaVideo::before{content:'';z-index:1;background:linear-gradient(90deg,rgba(8,7,6,.84),rgba(8,7,6,.46) 56%,rgba(8,7,6,.66)),linear-gradient(0deg,rgba(8,7,6,.88),rgba(8,7,6,.18) 48%,rgba(8,7,6,.3))}
+.heroContent,.scroll{z-index:2}
 .venuePhoto{position:relative;overflow:hidden;background:#191610}
 .venuePhoto img{object-fit:cover}
 .split{gap:0;align-items:stretch;padding-bottom:clamp(40px,5vw,80px)}
@@ -27,6 +29,7 @@ const photoCss = `
 .exteriorPhotos .terracePhoto{position:absolute;right:0;bottom:0;width:46%;aspect-ratio:3/4;border:8px solid var(--bg)}
 .terracePhoto img{object-position:54% 50%}
 @media(max-width:800px){
+  .heroVideo{object-position:55% center}
   .printSection::before{background-size:780px auto}
   .localCopy::before{background-size:710px auto}
   .split{padding-bottom:48px}
