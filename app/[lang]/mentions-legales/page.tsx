@@ -1,7 +1,7 @@
 import { ArrowUpRight } from 'lucide-react';
 import Link from 'next/link';
 
-// Restaurant legal details validated by NOMADE. Hosting details remain pending confirmation.
+// Restaurant legal details validated by NOMADE. Hosting details verified in the o2switch cPanel.
 const legal = {
   companyName: 'SAS NOMADE',
   legalForm: 'SAS',
@@ -12,9 +12,9 @@ const legal = {
   publisherName: 'CHLOIAN KAMO',
   phone: '07 45 26 28 23',
   email: 'nomaderestaubar@gmail.com',
-  hostName: '[Nom de l’hébergeur — ex. Vercel Inc.]',
-  hostAddress: '[Adresse de l’hébergeur]',
-  hostPhone: '[Téléphone de l’hébergeur, si disponible]'
+  hostName: 'o2switch',
+  hostAddress: 'Chemin des Pardiaux, 63000 Clermont-Ferrand, France',
+  hostPhone: '04 44 44 60 40'
 };
 
 const copy = {
