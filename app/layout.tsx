@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://www.nomade-foix.fr'),
   title: 'NOMADE — Restaurant · Bar · Foix',
   description: 'Cuisine au feu, produits locaux, influences du monde.',
 };
