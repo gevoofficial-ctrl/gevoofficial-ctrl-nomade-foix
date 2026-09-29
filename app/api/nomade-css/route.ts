@@ -11,7 +11,7 @@ const photoCss = `
 .heroMediaVideo::before{content:'';z-index:1;background:linear-gradient(90deg,rgba(8,7,6,.84),rgba(8,7,6,.46) 56%,rgba(8,7,6,.66)),linear-gradient(0deg,rgba(8,7,6,.88),rgba(8,7,6,.18) 48%,rgba(8,7,6,.3))}
 .heroContent,.scroll{z-index:2}
 .venuePhoto{position:relative;overflow:hidden;background:#191610}
-.venuePhoto img{object-fit:cover}
+.venuePhoto img{object-fit:cover;pointer-events:none;user-select:none;-webkit-user-select:none;-webkit-user-drag:none;-webkit-touch-callout:none}
 .split{gap:0;align-items:stretch;padding-bottom:clamp(40px,5vw,80px)}
 .houseCopy{display:flex;flex-direction:column;justify-content:center;align-items:flex-start;min-width:0;padding:clamp(32px,4.5vw,72px);background:#191711}
 .houseCopy h2{font-size:clamp(42px,5.2vw,76px)}
