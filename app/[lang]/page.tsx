@@ -2,6 +2,7 @@ import { ArrowDown, ArrowUpRight } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import HeroVideo from '../components/hero-video';
+import { localized, readMenu, sortedMenu } from '../../lib/menu';
 
 const copy = {
   fr: {
@@ -39,12 +40,6 @@ const photoAlt = {
   },
 };
 
-const menuCopy = {
-  fr: [['MAGRET DE CANARD','Jus réduit BBQ · patates douces · betteraves','21 €'],['RISOTTO','Pesto aux herbes · parmesan','18 €'],['PIÈCE DE BŒUF','Sélection du moment · cuisson au feu de bois','28 €']],
-  en: [['DUCK MAGRET','BBQ jus · sweet potato · beetroot','21 €'],['RISOTTO','Herb pesto · Parmesan','18 €'],['BEEF CUT','Today’s selection · wood-fire cooking','28 €']],
-  es: [['MAGRET DE PATO','Jugo BBQ · boniato · remolacha','21 €'],['RISOTTO','Pesto de hierbas · parmesano','18 €'],['CORTE DE TERNERA','Selección del día · cocción al fuego de leña','28 €']],
-};
-
 const eventCopy = {
   fr: { description: 'Anniversaires, repas d’entreprise, événements privés — un cadre chaleureux et authentique.', cta: 'En savoir plus' },
   en: { description: 'Birthdays, business meals and private events — a warm, authentic setting.', cta: 'Learn more' },
@@ -68,11 +63,10 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
   const lang = (['fr','en','es'] as const).includes(rawLang as 'fr'|'en'|'es') ? rawLang as 'fr'|'en'|'es' : 'fr';
   const t=copy[lang];
   const alt=photoAlt[lang];
-  const dishes=menuCopy[lang];
+  const dishes=sortedMenu(await readMenu()).filter(d => d.signature && d.available);
   const event=eventCopy[lang];
   const footer=footerCopy[lang];
   const videoFallback=videoFallbackCopy[lang];
-  // TODO: Replace these layout placeholders with the restaurant-approved menu and prices before a production launch.
   return <main lang={lang}>
     <header className="header"><Link className="logo" href={`/${lang}#top`} aria-label="Nomade"><Image src="/nomade-logo-light.svg" alt="NOMADE" width={2933} height={1000} priority /></Link><nav>{t.nav.map((n,i)=><a key={n} href={['#house','#menu','#events','#contact'][i]}>{n}</a>)}</nav><div className="tools"><div className="langs">{(['fr','en','es'] as const).map(l=><Link key={l} className={lang===l?'active':''} href={`/${l}`}>{l.toUpperCase()}</Link>)}</div></div></header>
     <details className="mobileMenu">
@@ -86,7 +80,7 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
 
     <section className="local section printSection"><div className="venuePhoto winePhoto"><Image src="/images/nomade-vin.webp" alt={alt.wine} fill sizes="(max-width: 800px) 88vw, 46vw" /></div><div className="localCopy"><p className="eyebrow">02 / ARIÈGE</p><h2>{t.local}</h2><p className="lead">{t.localText}</p><a className="textLink" href="#menu">{t.menu} <ArrowUpRight size={16}/></a></div></section>
 
-    <section id="menu" className="menuSection section"><div className="sectionHead"><div><p className="eyebrow">03 / {t.nav[1]}</p><h2>{t.signatures}</h2></div><a className="button ghost" href="#contact">{t.menu}<ArrowUpRight size={16}/></a></div><div className="dishes">{dishes.map(([name,desc,price],i)=><article className="dish" key={name}><div className={`dishImage dish${i+1}`}/><div><h3>{name}</h3><p>{desc}</p></div><strong>{price}</strong></article>)}</div></section>
+    <section id="menu" className="menuSection section"><div className="sectionHead"><div><p className="eyebrow">03 / {t.nav[1]}</p><h2>{t.signatures}</h2></div><Link className="button ghost" href={`/${lang}/carte`}>{t.menu}<ArrowUpRight size={16}/></Link></div><div className="dishes">{dishes.map(d => { const dish = localized(d, lang); return <article className="dish" key={d.id}>{d.imageUrl ? <div className="dishImage" style={{backgroundImage:`url('${d.imageUrl.replaceAll("'", '%27')}')`,backgroundSize:'cover',backgroundPosition:'center'}}/> : <div className="dishImage"/>}<div><h3>{dish.name}</h3><p>{dish.description}</p></div><strong>{new Intl.NumberFormat(lang, {style:'currency',currency:'EUR'}).format(d.priceCents/100)}</strong></article> })}</div>{dishes.length===0 && <p className="muted">{lang==='fr'?'La carte arrive bientôt.':lang==='en'?'The menu is coming soon.':'La carta estará disponible pronto.'}</p>}</section>
 
     {/* TODO: Validate this public-facing event copy with the restaurant before production publication. */}
     <section id="events" className="events section printSection"><div className="venuePhoto diningPhoto"><Image src="/images/nomade-salle.webp" alt={alt.dining} fill sizes="(max-width: 800px) 88vw, 46vw" /></div><div><p className="eyebrow">04 / NOMADE</p><h2>{t.events}</h2><p className="lead">{event.description}</p><a className="button" href="#contact">{event.cta}<ArrowUpRight size={16}/></a></div></section>
@@ -100,3 +94,4 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
 export function generateStaticParams() {
   return [{ lang: 'fr' }, { lang: 'en' }, { lang: 'es' }];
 }
+export const dynamic = 'force-dynamic';

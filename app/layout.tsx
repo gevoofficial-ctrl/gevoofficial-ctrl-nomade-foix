@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import './menu.css';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.nomade-foix.fr'),
@@ -12,7 +13,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         {/* The API route is deliberate: it keeps the stylesheet URL stable for staging caches. */}
         {/* eslint-disable-next-line @next/next/no-css-tags */}
-        <link rel="stylesheet" href="/api/nomade-css?v=8" />
+        <link rel="stylesheet" href="/api/nomade-css?v=9" />
       </head>
       <body>{children}</body>
     </html>
