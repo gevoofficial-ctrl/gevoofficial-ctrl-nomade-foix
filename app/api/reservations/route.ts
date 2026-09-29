@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
   const user = process.env.NOMADE_SMTP_USER;
   const pass = process.env.NOMADE_SMTP_PASSWORD;
   const from = process.env.NOMADE_SMTP_FROM;
-  const to = process.env.NOMADE_RESERVATIONS_TO;
+  const to = process.env.NOMADE_RESERVATIONS_TO || 'nomaderestaubar@gmail.com';
   if (!host || !user || !pass || !from || !to || !Number.isInteger(port) || port < 1 || port > 65535) {
     return NextResponse.json({ error:'Reservations are temporarily unavailable. Please call the restaurant.' }, { status:503 });
   }

@@ -43,8 +43,10 @@ Configure the following variables in the server's Node application environment:
 - `NOMADE_SMTP_SECURE=true` if your SMTP server uses implicit TLS on a nonstandard port
 - `NOMADE_SMTP_USER`, `NOMADE_SMTP_PASSWORD`
 - `NOMADE_SMTP_FROM`: a sender address authorized by that mailbox
-- `NOMADE_RESERVATIONS_TO`: the restaurant's confirmed recipient address
+- `NOMADE_RESERVATIONS_TO` (optional): overrides the confirmed recipient
+  `nomaderestaubar@gmail.com`
 
 Credentials remain on the server; the repository contains none. Until these values are
 configured, the form shows a phone fallback and the endpoint refuses submissions.
-Confirm the recipient and SMTP account with the restaurant before enabling delivery.
+The recipient was confirmed by the restaurant. Configure the SMTP sender account before
+enabling delivery; do not put its password in Git.
