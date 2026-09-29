@@ -6,6 +6,7 @@ export type Translation = { name: string; description: string };
 export type Dish = {
   id: string;
   category: string;
+  categoryTranslations?: Record<Lang, string>;
   translations: Record<Lang, Translation>;
   priceCents: number;
   imageUrl: string;
@@ -46,6 +47,14 @@ export function validateDish(input: unknown): Dish {
     translations[lang] = { name, description };
   }
   const category = str(d.category, 80);
+  const categoryTranslations = {} as Record<Lang, string>;
+  for (const lang of ['fr','en','es'] as const) {
+    const value = d.categoryTranslations && typeof d.categoryTranslations === 'object'
+      ? (d.categoryTranslations as Record<string,unknown>)[lang] : undefined;
+    const translation = str(value, 80);
+    if (value !== undefined && translation === null) throw new Error('Invalid category translation');
+    categoryTranslations[lang] = translation || category || '';
+  }
   const imageUrl = str(d.imageUrl, 500), videoUrl = str(d.videoUrl, 500);
   if (!category || imageUrl === null || videoUrl === null) throw new Error('Category or media URL is invalid');
   for (const url of [imageUrl, videoUrl]) {
@@ -58,7 +67,7 @@ export function validateDish(input: unknown): Dish {
   if (![d.vegetarian, d.vegan, d.glutenFree, d.available, d.signature].every(bool)) throw new Error('Invalid flags');
   return {
     id: typeof d.id === 'string' && /^[a-f0-9-]{36}$/.test(d.id) ? d.id : crypto.randomUUID(),
-    category, translations, priceCents: d.priceCents as number, imageUrl, videoUrl,
+    category, categoryTranslations, translations, priceCents: d.priceCents as number, imageUrl, videoUrl,
     allergens: [...new Set(d.allergens as number[])].sort((a, b) => a - b),
     vegetarian: d.vegetarian as boolean, vegan: d.vegan as boolean,
     glutenFree: d.glutenFree as boolean, available: d.available as boolean,

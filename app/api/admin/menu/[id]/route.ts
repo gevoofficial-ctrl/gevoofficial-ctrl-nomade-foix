@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { authorized, sameOrigin } from '../../../../../lib/admin-auth';
-import { updateMenu, validateDish } from '../../../../../lib/menu';
+import { readMenu, updateMenu, validateDish } from '../../../../../lib/menu';
+import { withAutomaticTranslations } from '../../../../../lib/translate-menu';
 
 export const runtime = 'nodejs';
 type Context = { params: Promise<{ id: string }> };
@@ -11,13 +12,15 @@ export async function PUT(request: NextRequest, { params }: Context) {
     const { id } = await params;
     const body = await request.json();
     if (JSON.stringify(body).length > 12000) return NextResponse.json({ error: 'Dish too large' }, { status: 413 });
-    const dish = validateDish({ ...body, id });
+    const previous = (await readMenu()).find(d => d.id === id);
+    if (!previous) return NextResponse.json({ error:'Dish not found' }, { status:404 });
+    const dish = validateDish(await withAutomaticTranslations(validateDish({ ...body, id }),previous));
     await updateMenu(items => {
       if (!items.some(d => d.id === id)) throw new Error('Dish not found');
       return items.map(d => d.id === id ? dish : d);
     });
     return NextResponse.json(dish);
-  } catch (e) { return NextResponse.json({ error: (e as Error).message }, { status: 400 }); }
+  } catch (e) { return NextResponse.json({ error: (e as Error).message }, { status: (e as Error).message.includes('OPENAI_API_KEY') ? 503 : 400 }); }
 }
 export async function DELETE(request: NextRequest, { params }: Context) {
   if (!authorized(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
