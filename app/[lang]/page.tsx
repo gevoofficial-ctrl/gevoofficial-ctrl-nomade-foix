@@ -63,11 +63,11 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
   const lang = (['fr','en','es'] as const).includes(rawLang as 'fr'|'en'|'es') ? rawLang as 'fr'|'en'|'es' : 'fr';
   const t=copy[lang];
   const alt=photoAlt[lang];
-  const dishes=sortedMenu(await readMenu()).filter(d => d.signature && d.available);
+  const dishes=sortedMenu(await readMenu()).filter(d => d.signature && d.available).slice(0, 3);
   const event=eventCopy[lang];
   const footer=footerCopy[lang];
   const videoFallback=videoFallbackCopy[lang];
-  const navLinks = ['#house', `/${lang}/carte`, '#events', '#contact'];
+  const navLinks = ['#house', '#menu', '#events', '#contact'];
   return <main lang={lang}>
     <header className="header"><Link className="logo" href={`/${lang}#top`} aria-label="Nomade"><Image src="/nomade-logo-light.svg" alt="NOMADE" width={2933} height={1000} priority /></Link><nav>{t.nav.map((n,i)=><a key={n} href={navLinks[i]}>{n}</a>)}</nav><div className="tools"><div className="langs">{(['fr','en','es'] as const).map(l=><Link key={l} className={lang===l?'active':''} href={`/${l}`}>{l.toUpperCase()}</Link>)}</div></div></header>
     <details className="mobileMenu">
