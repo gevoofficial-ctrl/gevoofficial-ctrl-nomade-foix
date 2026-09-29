@@ -38,7 +38,7 @@ const photoCss = `
   .houseCopy .textLink{margin-top:20px}
   .split .housePhoto{width:100%;height:88vw;min-height:0;aspect-ratio:auto}
   .local.section{padding-top:0}
-  .local .localCopy{grid-row:auto}
+  .local .localCopy{grid-row:1}
   .winePhoto{width:100%;height:110vw;min-height:0;aspect-ratio:auto}
   .localCopy{padding:32px 7vw 36px;background:#191711}
   .localCopy::before{content:none}

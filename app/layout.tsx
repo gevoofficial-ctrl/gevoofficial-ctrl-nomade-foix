@@ -12,7 +12,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         {/* The API route is deliberate: it keeps the stylesheet URL stable for staging caches. */}
         {/* eslint-disable-next-line @next/next/no-css-tags */}
-        <link rel="stylesheet" href="/api/nomade-css?v=6" />
+        <link rel="stylesheet" href="/api/nomade-css?v=7" />
       </head>
       <body>{children}</body>
     </html>
