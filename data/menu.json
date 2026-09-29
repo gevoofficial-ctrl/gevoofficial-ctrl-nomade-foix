@@ -1,0 +1,352 @@
+[
+  {
+    "id": "00000000-0000-4000-8000-000000000001",
+    "category": "Entrées",
+    "translations": {
+      "fr": {
+        "name": "TARTE TATIN",
+        "description": "Une entrée fondante et délicatement caramélisée, tout en douceur et en fraîcheur.",
+        "ingredients": "Échalotes, huile d’olive, gros sel"
+      },
+      "en": {
+        "name": "",
+        "description": "",
+        "ingredients": ""
+      },
+      "es": {
+        "name": "",
+        "description": "",
+        "ingredients": ""
+      }
+    },
+    "imageUrl": "",
+    "available": true,
+    "signature": false,
+    "order": 10
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000002",
+    "category": "Entrées",
+    "translations": {
+      "fr": {
+        "name": "AUBERGINE SOUFFLÉE",
+        "description": "Une aubergine légère et généreuse, travaillée autour de saveurs méditerranéennes.",
+        "ingredients": "Oignons, tomates confites"
+      },
+      "en": {
+        "name": "",
+        "description": "",
+        "ingredients": ""
+      },
+      "es": {
+        "name": "",
+        "description": "",
+        "ingredients": ""
+      }
+    },
+    "imageUrl": "",
+    "available": true,
+    "signature": false,
+    "order": 20
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000003",
+    "category": "Entrées",
+    "translations": {
+      "fr": {
+        "name": "POIVRON BRÛLÉ",
+        "description": "Le caractère fumé du poivron relevé par la fraîcheur crémeuse de la burrata.",
+        "ingredients": "Burrata au confit d’ail, feuille de basilic"
+      },
+      "en": {
+        "name": "",
+        "description": "",
+        "ingredients": ""
+      },
+      "es": {
+        "name": "",
+        "description": "",
+        "ingredients": ""
+      }
+    },
+    "imageUrl": "",
+    "available": true,
+    "signature": false,
+    "order": 30
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000004",
+    "category": "Entrées",
+    "translations": {
+      "fr": {
+        "name": "SUGGESTION ENTRÉE I",
+        "description": "Une création de la cuisine imaginée au fil des produits et de la saison.",
+        "ingredients": "Selon arrivage et inspiration de la cuisine"
+      },
+      "en": {
+        "name": "",
+        "description": "",
+        "ingredients": ""
+      },
+      "es": {
+        "name": "",
+        "description": "",
+        "ingredients": ""
+      }
+    },
+    "imageUrl": "",
+    "available": true,
+    "signature": false,
+    "order": 40
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000005",
+    "category": "Entrées",
+    "translations": {
+      "fr": {
+        "name": "SUGGESTION ENTRÉE II",
+        "description": "Une seconde proposition du moment, pensée selon les arrivages du jour.",
+        "ingredients": "Selon arrivage et inspiration de la cuisine"
+      },
+      "en": {
+        "name": "",
+        "description": "",
+        "ingredients": ""
+      },
+      "es": {
+        "name": "",
+        "description": "",
+        "ingredients": ""
+      }
+    },
+    "imageUrl": "",
+    "available": true,
+    "signature": false,
+    "order": 50
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000006",
+    "category": "Plats",
+    "translations": {
+      "fr": {
+        "name": "CÔTELETTE D’AGNEAU",
+        "description": "Une cuisson au feu de bois qui révèle une viande tendre, accompagnée d’un jus profond et herbacé.",
+        "ingredients": "Jus réduit Nomade, légumes de saison et condiment d’herbes fraîches préparé à la minute"
+      },
+      "en": {
+        "name": "",
+        "description": "",
+        "ingredients": ""
+      },
+      "es": {
+        "name": "",
+        "description": "",
+        "ingredients": ""
+      }
+    },
+    "imageUrl": "",
+    "available": true,
+    "signature": false,
+    "order": 60
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000007",
+    "category": "Plats",
+    "translations": {
+      "fr": {
+        "name": "MAGRET DE CANARD",
+        "description": "Un magret au feu de bois, gourmand et précis, équilibré par les légumes de saison et les herbes fraîches.",
+        "ingredients": "Jus réduit Nomade, légumes de saison et condiment d’herbes fraîches préparé à la minute"
+      },
+      "en": {
+        "name": "",
+        "description": "",
+        "ingredients": ""
+      },
+      "es": {
+        "name": "",
+        "description": "",
+        "ingredients": ""
+      }
+    },
+    "imageUrl": "",
+    "available": true,
+    "signature": false,
+    "order": 70
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000008",
+    "category": "Plats",
+    "translations": {
+      "fr": {
+        "name": "PLAT DU MOMENT",
+        "description": "Une assiette éphémère guidée par les arrivages, la saison et l’inspiration de la cuisine.",
+        "ingredients": "Selon arrivage et inspiration de la cuisine"
+      },
+      "en": {
+        "name": "",
+        "description": "",
+        "ingredients": ""
+      },
+      "es": {
+        "name": "",
+        "description": "",
+        "ingredients": ""
+      }
+    },
+    "imageUrl": "",
+    "available": true,
+    "signature": false,
+    "order": 80
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000009",
+    "category": "Plats",
+    "translations": {
+      "fr": {
+        "name": "VÉGÉTAL DU MOMENT",
+        "description": "Une assiette végétale généreuse, construite autour des produits de saison.",
+        "ingredients": "Aubergine à la Génésis ou risotto. S’adresser au serveur."
+      },
+      "en": {
+        "name": "",
+        "description": "",
+        "ingredients": ""
+      },
+      "es": {
+        "name": "",
+        "description": "",
+        "ingredients": ""
+      }
+    },
+    "imageUrl": "",
+    "available": true,
+    "signature": false,
+    "order": 90
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000010",
+    "category": "Plats",
+    "translations": {
+      "fr": {
+        "name": "POISSON DU MOMENT",
+        "description": "Le poisson du jour travaillé avec simplicité, accompagné d’une sauce onctueuse et de légumes de saison.",
+        "ingredients": "Beurre blanc, légumes du moment"
+      },
+      "en": {
+        "name": "",
+        "description": "",
+        "ingredients": ""
+      },
+      "es": {
+        "name": "",
+        "description": "",
+        "ingredients": ""
+      }
+    },
+    "imageUrl": "",
+    "available": true,
+    "signature": false,
+    "order": 100
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000011",
+    "category": "Desserts",
+    "translations": {
+      "fr": {
+        "name": "ASSIETTE DE FROMAGES",
+        "description": "Une sélection de fromages à savourer en fin de repas.",
+        "ingredients": "Sélection de fromages"
+      },
+      "en": {
+        "name": "",
+        "description": "",
+        "ingredients": ""
+      },
+      "es": {
+        "name": "",
+        "description": "",
+        "ingredients": ""
+      }
+    },
+    "imageUrl": "",
+    "available": true,
+    "signature": false,
+    "order": 110
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000012",
+    "category": "Desserts",
+    "translations": {
+      "fr": {
+        "name": "MOUSSE AU CHOCOLAT",
+        "description": "Une mousse intense et aérienne, relevée par une touche d’huile d’olive et de sel.",
+        "ingredients": "Huile d’olive, gros sel"
+      },
+      "en": {
+        "name": "",
+        "description": "",
+        "ingredients": ""
+      },
+      "es": {
+        "name": "",
+        "description": "",
+        "ingredients": ""
+      }
+    },
+    "imageUrl": "",
+    "available": true,
+    "signature": false,
+    "order": 120
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000013",
+    "category": "Desserts",
+    "translations": {
+      "fr": {
+        "name": "DESSERT DU MOMENT",
+        "description": "Une création sucrée qui évolue au rythme des saisons et de l’inspiration.",
+        "ingredients": "Selon arrivage et inspiration de la cuisine"
+      },
+      "en": {
+        "name": "",
+        "description": "",
+        "ingredients": ""
+      },
+      "es": {
+        "name": "",
+        "description": "",
+        "ingredients": ""
+      }
+    },
+    "imageUrl": "",
+    "available": true,
+    "signature": false,
+    "order": 130
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000014",
+    "category": "Enfant",
+    "translations": {
+      "fr": {
+        "name": "RAVIOLIS PORC & BŒUF",
+        "description": "Des raviolis généreux et réconfortants, servis avec la sauce préparée du moment.",
+        "ingredients": "Raviolis porc & bœuf, sauce du moment"
+      },
+      "en": {
+        "name": "",
+        "description": "",
+        "ingredients": ""
+      },
+      "es": {
+        "name": "",
+        "description": "",
+        "ingredients": ""
+      }
+    },
+    "imageUrl": "",
+    "available": true,
+    "signature": false,
+    "order": 140
+  }
+]
