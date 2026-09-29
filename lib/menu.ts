@@ -2,19 +2,12 @@ import { promises as fs } from 'node:fs';
 import path from 'node:path';
 
 export type Lang = 'fr' | 'en' | 'es';
-export type Translation = { name: string; description: string };
+export type Translation = { name: string; description: string; ingredients: string };
 export type Dish = {
   id: string;
   category: string;
-  categoryTranslations?: Record<Lang, string>;
   translations: Record<Lang, Translation>;
-  priceCents: number;
   imageUrl: string;
-  videoUrl: string;
-  allergens: number[];
-  vegetarian: boolean;
-  vegan: boolean;
-  glutenFree: boolean;
   available: boolean;
   signature: boolean;
   order: number;
@@ -27,55 +20,62 @@ export async function readMenu(): Promise<Dish[]> {
   try {
     const data: unknown = JSON.parse(await fs.readFile(file(), 'utf8'));
     if (!Array.isArray(data)) throw new Error('Invalid menu data');
-    return data as Dish[];
+    return data.map(migrateDish);
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === 'ENOENT') return [];
     throw error;
   }
 }
 
+function migrateDish(input: unknown): Dish {
+  const d = input as Record<string, unknown>;
+  const oldTranslations = d.translations && typeof d.translations === 'object' ? d.translations as Record<string, unknown> : {};
+  const translations = {} as Record<Lang, Translation>;
+  for (const lang of ['fr','en','es'] as const) {
+    const t = (oldTranslations[lang] || {}) as Record<string, unknown>;
+    translations[lang] = {
+      name: typeof t.name === 'string' ? t.name : '',
+      description: typeof t.description === 'string' ? t.description : '',
+      ingredients: typeof t.ingredients === 'string' ? t.ingredients : '',
+    };
+  }
+  return {
+    id: typeof d.id === 'string' ? d.id : crypto.randomUUID(),
+    category: typeof d.category === 'string' ? d.category : 'Plats',
+    translations,
+    imageUrl: typeof d.imageUrl === 'string' ? d.imageUrl : '',
+    available: typeof d.available === 'boolean' ? d.available : true,
+    signature: typeof d.signature === 'boolean' ? d.signature : false,
+    order: Number.isSafeInteger(d.order) ? d.order as number : 0,
+  };
+}
+
 export function validateDish(input: unknown): Dish {
   if (!input || typeof input !== 'object') throw new Error('Invalid dish');
   const d = input as Record<string, unknown>;
   const str = (x: unknown, max: number) => typeof x === 'string' && x.length <= max ? x.trim() : null;
+  const category = str(d.category, 80);
+  if (!category) throw new Error('Category is required');
   const translations = {} as Record<Lang, Translation>;
-  for (const lang of ['fr', 'en', 'es'] as const) {
+  for (const lang of ['fr','en','es'] as const) {
     const t = d.translations && typeof d.translations === 'object'
       ? (d.translations as Record<string, unknown>)[lang] as Record<string, unknown> | undefined : undefined;
-    const name = str(t?.name, 120), description = str(t?.description, 500);
-    if (name === null || description === null || (lang === 'fr' && !name)) throw new Error('French name is required; translations must be valid');
-    translations[lang] = { name, description };
+    const name = str(t?.name, 120), description = str(t?.description, 500), ingredients = str(t?.ingredients, 500);
+    if (name === null || description === null || ingredients === null || (lang === 'fr' && !name)) throw new Error('French name is required; dish text must be valid');
+    translations[lang] = { name, description, ingredients };
   }
-  const category = str(d.category, 80);
-  const categoryTranslations = {} as Record<Lang, string>;
-  for (const lang of ['fr','en','es'] as const) {
-    const value = d.categoryTranslations && typeof d.categoryTranslations === 'object'
-      ? (d.categoryTranslations as Record<string,unknown>)[lang] : undefined;
-    const translation = str(value, 80);
-    if (value !== undefined && translation === null) throw new Error('Invalid category translation');
-    categoryTranslations[lang] = translation || category || '';
-  }
-  const imageUrl = str(d.imageUrl, 500), videoUrl = str(d.videoUrl, 500);
-  if (!category || imageUrl === null || videoUrl === null) throw new Error('Category or media URL is invalid');
-  for (const url of [imageUrl, videoUrl]) {
-    if (url && !(/^\/api\/menu\/media\/[a-f0-9-]{36}\.(jpg|png|webp|mp4|webm)$/.test(url) || /^https:\/\/[\w.-]+(?:\/[\w\-./%?=&]+)?$/.test(url))) throw new Error('Media URL must be HTTPS or an uploaded file');
-  }
-  if (!Number.isSafeInteger(d.priceCents) || (d.priceCents as number) < 0 || (d.priceCents as number) > 10000000) throw new Error('Invalid price');
+  const imageUrl = str(d.imageUrl, 500);
+  if (imageUrl === null) throw new Error('Invalid image URL');
+  if (imageUrl && !(/^\/api\/menu\/media\/[a-f0-9-]{36}\.(jpg|png|webp)$/.test(imageUrl) || /^https:\/\/[\w.-]+(?:\/[\w\-./%?=&]+)?$/.test(imageUrl))) throw new Error('Image URL must be HTTPS or an uploaded file');
   if (!Number.isSafeInteger(d.order) || Math.abs(d.order as number) > 100000) throw new Error('Invalid order');
-  if (!Array.isArray(d.allergens) || d.allergens.length > 14 || d.allergens.some(n => !Number.isInteger(n) || n < 1 || n > 14)) throw new Error('Invalid allergens');
-  const bool = (v: unknown) => typeof v === 'boolean';
-  if (![d.vegetarian, d.vegan, d.glutenFree, d.available, d.signature].every(bool)) throw new Error('Invalid flags');
+  if (typeof d.available !== 'boolean' || typeof d.signature !== 'boolean') throw new Error('Invalid flags');
   return {
     id: typeof d.id === 'string' && /^[a-f0-9-]{36}$/.test(d.id) ? d.id : crypto.randomUUID(),
-    category, categoryTranslations, translations, priceCents: d.priceCents as number, imageUrl, videoUrl,
-    allergens: [...new Set(d.allergens as number[])].sort((a, b) => a - b),
-    vegetarian: d.vegetarian as boolean, vegan: d.vegan as boolean,
-    glutenFree: d.glutenFree as boolean, available: d.available as boolean,
-    signature: d.signature as boolean, order: d.order as number,
+    category, translations, imageUrl,
+    available: d.available, signature: d.signature, order: d.order as number,
   };
 }
 
-// A short exclusive lock protects the JSON file when Passenger serves concurrent requests.
 export async function updateMenu(change: (items: Dish[]) => Dish[]): Promise<Dish[]> {
   const target = file();
   await fs.mkdir(path.dirname(target), { recursive: true });
