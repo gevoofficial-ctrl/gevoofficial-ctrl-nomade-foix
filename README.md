@@ -33,3 +33,18 @@ The public `/fr/carte`, `/en/carte`, `/es/carte` pages and homepage signatures r
 directly from this data on each request. The menu is entered and displayed in French
 on all three language versions of the site. Other interface copy remains localized.
 No translation API key is needed. No unapproved sample dishes or prices are seeded.
+
+## Reservation requests (staging)
+
+The booking form sends an email request; it does not confirm a table automatically.
+Configure the following variables in the server's Node application environment:
+
+- `NOMADE_SMTP_HOST`, `NOMADE_SMTP_PORT` (465 for implicit TLS or 587 for STARTTLS)
+- `NOMADE_SMTP_SECURE=true` if your SMTP server uses implicit TLS on a nonstandard port
+- `NOMADE_SMTP_USER`, `NOMADE_SMTP_PASSWORD`
+- `NOMADE_SMTP_FROM`: a sender address authorized by that mailbox
+- `NOMADE_RESERVATIONS_TO`: the restaurant's confirmed recipient address
+
+Credentials remain on the server; the repository contains none. Until these values are
+configured, the form shows a phone fallback and the endpoint refuses submissions.
+Confirm the recipient and SMTP account with the restaurant before enabling delivery.

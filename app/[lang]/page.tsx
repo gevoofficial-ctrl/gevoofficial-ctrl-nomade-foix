@@ -2,6 +2,7 @@ import { ArrowDown, ArrowUpRight } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import HeroVideo from '../components/hero-video';
+import ReservationForm from '../components/reservation-form';
 import { localized, readMenu, sortedMenu } from '../../lib/menu';
 
 const copy = {
@@ -75,7 +76,7 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
       <div className="mobileNav">{t.nav.map((n,i)=><a key={n} href={navLinks[i]}>{n}</a>)}<div className="langs mobileLangs">{(['fr','en','es'] as const).map(l=><Link key={l} className={lang===l?'active':''} href={`/${l}`}>{l.toUpperCase()}</Link>)}</div></div>
     </details>
 
-    <section id="top" className="hero"><div className="heroMedia heroMediaVideo" aria-hidden="true"><HeroVideo fallback={videoFallback} /></div><div className="heroContent"><span>{t.heroKicker}</span><h1>NOMADE</h1><p className="heroTitle">{t.heroTitle}</p><p className="heroSub">{t.heroSub}</p><a className="button" href="#contact">{t.reserve}<ArrowUpRight size={16}/></a></div><a className="scroll" href="#house"><ArrowDown size={16}/>{t.discover}</a></section>
+    <section id="top" className="hero"><div className="heroMedia heroMediaVideo" aria-hidden="true"><HeroVideo fallback={videoFallback} /></div><div className="heroContent"><span>{t.heroKicker}</span><h1>NOMADE</h1><p className="heroTitle">{t.heroTitle}</p><p className="heroSub">{t.heroSub}</p><a className="button" href="#reservation">{t.reserve}<ArrowUpRight size={16}/></a></div><a className="scroll" href="#house"><ArrowDown size={16}/>{t.discover}</a></section>
 
     <section id="house" className="split section printSection"><div className="houseCopy"><p className="eyebrow">01 / NOMADE</p><h2>{t.fire}</h2><p className="lead">{t.fireText}</p><a className="textLink" href="#menu">{t.signatures} <ArrowUpRight size={16}/></a></div><div className="venuePhoto housePhoto"><Image src="/images/nomade-interieur.webp" alt={alt.house} fill sizes="(max-width: 800px) 88vw, 42vw" /></div></section>
 
@@ -86,7 +87,9 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
     {/* TODO: Validate this public-facing event copy with the restaurant before production publication. */}
     <section id="events" className="events section printSection"><div className="venuePhoto diningPhoto"><Image src="/images/nomade-salle.webp" alt={alt.dining} fill sizes="(max-width: 800px) 88vw, 46vw" /></div><div><p className="eyebrow">04 / NOMADE</p><h2>{t.events}</h2><p className="lead">{event.description}</p><a className="button" href="#contact">{event.cta}<ArrowUpRight size={16}/></a></div></section>
 
-    <section id="contact" className="contact section printSection"><div><p className="eyebrow">05 / FOIX</p><h2>{t.find}</h2><p className="address">42 Rue des Chapeliers<br/>09000 Foix, France</p><p className="muted"><a href="tel:+33745262823">07 45 26 28 23</a><br/><a href="mailto:nomaderestaubar@gmail.com">nomaderestaubar@gmail.com</a></p><a className="button" href="mailto:nomaderestaubar@gmail.com">{t.reserve}<ArrowUpRight size={16}/></a></div><div className="exteriorPhotos"><div className="venuePhoto facadePhoto"><Image src="/images/nomade-facade.webp" alt={alt.facade} fill sizes="(max-width: 800px) 73vw, 32vw" /></div><div className="venuePhoto terracePhoto"><Image src="/images/nomade-terrasse.webp" alt={alt.terrace} fill sizes="(max-width: 800px) 40vw, 17vw" /></div></div></section>
+    <ReservationForm lang={lang} />
+
+    <section id="contact" className="contact section printSection"><div><p className="eyebrow">06 / FOIX</p><h2>{t.find}</h2><p className="address">42 Rue des Chapeliers<br/>09000 Foix, France</p><p className="muted"><a href="tel:+33745262823">07 45 26 28 23</a><br/><a href="mailto:nomaderestaubar@gmail.com">nomaderestaubar@gmail.com</a></p><a className="button" href="#reservation">{t.reserve}<ArrowUpRight size={16}/></a></div><div className="exteriorPhotos"><div className="venuePhoto facadePhoto"><Image src="/images/nomade-facade.webp" alt={alt.facade} fill sizes="(max-width: 800px) 73vw, 32vw" /></div><div className="venuePhoto terracePhoto"><Image src="/images/nomade-terrasse.webp" alt={alt.terrace} fill sizes="(max-width: 800px) 40vw, 17vw" /></div></div></section>
 
     <footer><div className="logo"><Image src="/nomade-logo-light.svg" alt="NOMADE" width={2933} height={1000} /></div><div>Restaurant · Bar · Foix</div><Link href={`/${lang}/mentions-legales`}>{footer.legal}</Link><Link href={`/${lang}/confidentialite`}>{footer.privacy}</Link><Link href={`/${lang}/allergenes`}>{t.allergens}</Link><a href="#top">{t.discover} <ArrowUpRight size={14}/></a><a href="https://www.instagram.com/nomaderestaubar/" target="_blank" rel="noopener noreferrer" aria-label="Instagram — @nomaderestaubar"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg></a></footer>
   </main>

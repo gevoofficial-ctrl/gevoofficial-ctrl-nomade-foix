@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './menu.css';
+import './reservation.css';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.nomade-foix.fr'),
