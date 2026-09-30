@@ -49,10 +49,6 @@ const photoCss = `
   .exteriorPhotos{margin-top:40px}
   .exteriorPhotos .terracePhoto{border-width:6px}
 }
-/* Keep native date/time controls inside the same field width on iOS Safari. */
-.reservationForm,.reservationFields,.reservationFields label{min-width:0;max-width:100%}
-.reservationFields input{display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box}
-.reservationFields input[type='date'],.reservationFields input[type='time']{width:100%;max-width:100%;min-width:0;box-sizing:border-box;-webkit-appearance:none;appearance:none}
 .footerCookieSettings{margin:0;padding:0;border:0;background:transparent;color:inherit;font:inherit;text-transform:inherit;letter-spacing:inherit;cursor:pointer}
 .footerCookieSettings:hover,.footerCookieSettings:focus-visible{color:var(--paper);outline:none}
 `;

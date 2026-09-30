@@ -18,7 +18,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <head>
         {/* The API route is deliberate: it keeps the stylesheet URL stable for staging caches. */}
         {/* eslint-disable-next-line @next/next/no-css-tags */}
-        <link rel="stylesheet" href="/api/nomade-css?v=11" />
+        <link rel="stylesheet" href="/api/nomade-css?v=12" />
       </head>
       <body>{children}</body>
     </html>
