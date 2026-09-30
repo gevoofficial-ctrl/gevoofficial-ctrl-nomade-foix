@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { headers } from 'next/headers';
 import { siteUrl } from '../lib/seo';
+import GoogleAnalytics from '../components/GoogleAnalytics';
 import './menu.css';
 import './reservation.css';
 
@@ -39,7 +40,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <meta name="msvalidate.01" content="6765DEE9694A7BEA83306F67874B81D8" />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(restaurantStructuredData) }} />
       </head>
-      <body>{children}</body>
+      <body><GoogleAnalytics />{children}</body>
     </html>
   );
 }

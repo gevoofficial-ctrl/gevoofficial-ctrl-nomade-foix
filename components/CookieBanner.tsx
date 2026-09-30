@@ -1,15 +1,16 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { COOKIE_SETTINGS_EVENT } from './CookieSettingsButton';
+import { COOKIE_CONSENT_CHANGED_EVENT, COOKIE_SETTINGS_EVENT } from './CookieSettingsButton';
 
 const STORAGE_KEY = 'nomade-cookie-consent';
 const MAX_AGE_MS = 13 * 30 * 24 * 60 * 60 * 1000;
+const ANALYTICS_CONSENT_VERSION = 1;
 
 const copy = {
-  fr: { title: 'Préférences cookies', text: 'Aucun cookie publicitaire ou de mesure d’audience n’est actuellement activé. Nous mémorisons uniquement votre choix de consentement dans le stockage local de votre navigateur.', accept: 'Accepter', reject: 'Refuser', more: 'En savoir plus' },
-  en: { title: 'Cookie preferences', text: 'No advertising or audience-measurement cookies are currently enabled. We only store your consent choice in your browser’s local storage.', accept: 'Accept', reject: 'Reject', more: 'Learn more' },
-  es: { title: 'Preferencias de cookies', text: 'Actualmente no hay cookies publicitarias ni de medición de audiencia activadas. Solo guardamos tu elección en el almacenamiento local del navegador.', accept: 'Aceptar', reject: 'Rechazar', more: 'Más información' }
+  fr: { title: 'Préférences cookies', text: 'Avec votre accord, nous utilisons Google Analytics pour mesurer la fréquentation du site. Votre choix est mémorisé dans le stockage local de votre navigateur.', accept: 'Accepter', reject: 'Refuser', more: 'En savoir plus' },
+  en: { title: 'Cookie preferences', text: 'With your consent, we use Google Analytics to measure website traffic. Your choice is stored in your browser’s local storage.', accept: 'Accept', reject: 'Reject', more: 'Learn more' },
+  es: { title: 'Preferencias de cookies', text: 'Con su consentimiento, utilizamos Google Analytics para medir la audiencia del sitio. Su elección se guarda en el almacenamiento local del navegador.', accept: 'Aceptar', reject: 'Rechazar', more: 'Más información' }
 };
 
 export default function CookieBanner({ lang }: { lang: 'fr' | 'en' | 'es' }) {
@@ -23,9 +24,9 @@ export default function CookieBanner({ lang }: { lang: 'fr' | 'en' | 'es' }) {
     const timer = window.setTimeout(() => {
       try {
         const raw = localStorage.getItem(STORAGE_KEY);
-        const { value, timestamp } = raw ? JSON.parse(raw) : {};
+        const { value, timestamp, analyticsConsentVersion } = raw ? JSON.parse(raw) : {};
         const current = value === 'accepted' || value === 'refused' ? value : null;
-        setVisible(!current || !timestamp || Date.now() - timestamp > MAX_AGE_MS);
+        setVisible(!current || analyticsConsentVersion !== ANALYTICS_CONSENT_VERSION || !timestamp || Date.now() - timestamp > MAX_AGE_MS);
       } catch {
         setVisible(true);
       }
@@ -48,7 +49,8 @@ export default function CookieBanner({ lang }: { lang: 'fr' | 'en' | 'es' }) {
     return () => window.cancelAnimationFrame(frame);
   }, [visible]);
   const choose = (value: 'accepted' | 'refused') => {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ value, timestamp: Date.now() })); } catch {}
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ value, timestamp: Date.now(), analyticsConsentVersion: ANALYTICS_CONSENT_VERSION })); } catch {}
+    window.dispatchEvent(new Event(COOKIE_CONSENT_CHANGED_EVENT));
     setVisible(false);
     window.requestAnimationFrame(() => restoreFocusRef.current?.focus());
   };
