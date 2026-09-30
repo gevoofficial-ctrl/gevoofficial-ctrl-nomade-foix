@@ -18,6 +18,7 @@ export default async function Carte({params}: {params: Promise<{lang:string}>}) 
   return <main className="legalPage menuPage" lang={lang}>
     <Link className="textLink" href={`/${lang}`}>← {t.back}</Link>
     <div className="legalHead"><p className="eyebrow">NOMADE · FOIX</p><h1>{t.title}</h1></div>
+    <nav className="menuLanguageSwitcher" aria-label="Menu language">{(['fr', 'en', 'es'] as const).map(language => <Link key={language} className={language === lang ? 'active' : ''} href={`/${language}/carte`} aria-current={language === lang ? 'page' : undefined}>{language.toUpperCase()}</Link>)}</nav>
     {items.length === 0 && <p className="muted">{lang === 'fr' ? 'La carte arrive bientôt.' : lang === 'en' ? 'The menu is coming soon.' : 'La carta estará disponible pronto.'}</p>}
     {categories.map(category => <section key={category} className="menuCategory"><h2>{category}</h2>
       {items.filter(d => d.category === category).map(d => {

@@ -83,12 +83,6 @@ const eventCopy = {
   es: { description: 'Cumpleaños, comidas de empresa y eventos privados: un entorno cálido y auténtico.', cta: 'Más información' },
 };
 
-const footerCopy = {
-  fr: { legal: 'Mentions légales', privacy: 'Confidentialité' },
-  en: { legal: 'Legal notice', privacy: 'Privacy' },
-  es: { legal: 'Aviso legal', privacy: 'Privacidad' },
-};
-
 const videoFallbackCopy = {
   fr: 'Votre navigateur ne prend pas en charge la vidéo.',
   en: 'Your browser does not support video playback.',
@@ -103,7 +97,6 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
   const menu=sortedMenu(await readMenu());
   const dishes=homepageDishIds.map(id => menu.find(d => d.id === id)).filter((dish): dish is Dish => Boolean(dish));
   const event=eventCopy[lang];
-  const footer=footerCopy[lang];
   const videoFallback=videoFallbackCopy[lang];
   const navLinks = ['#house', '#menu', '#events', '#contact'];
   return <main lang={lang}>
@@ -128,7 +121,6 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
 
     <section id="contact" className="contact section printSection"><div><p className="eyebrow">06 / FOIX</p><h2>{t.find}</h2><p className="address">42 Rue des Chapeliers<br/>09000 Foix, France</p><p className="muted"><a href="tel:+33745262823">07 45 26 28 23</a><br/><a href="mailto:nomaderestaubar@gmail.com">nomaderestaubar@gmail.com</a></p><a className="button" href="#reservation">{t.reserve}<ArrowUpRight size={16}/></a></div><div className="exteriorPhotos"><div className="venuePhoto facadePhoto"><Image src="/images/nomade-facade.webp" alt={alt.facade} fill sizes="(max-width: 800px) 73vw, 32vw" /></div><div className="venuePhoto terracePhoto"><Image src="/images/nomade-terrasse.webp" alt={alt.terrace} fill sizes="(max-width: 800px) 40vw, 17vw" /></div></div></section>
 
-    <footer><div className="logo"><Image src="/nomade-logo-light.svg" alt="NOMADE" width={2933} height={1000} /></div><div>Restaurant · Bar · Foix</div><Link href={`/${lang}/mentions-legales`}>{footer.legal}</Link><Link href={`/${lang}/confidentialite`}>{footer.privacy}</Link><Link href={`/${lang}/allergenes`}>{t.allergens}</Link><a href="#top">{t.discover} <ArrowUpRight size={14}/></a><a href="https://www.instagram.com/nomaderestaubar/" target="_blank" rel="noopener noreferrer" aria-label="Instagram — @nomaderestaubar"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg></a></footer>
   </main>
 }
 

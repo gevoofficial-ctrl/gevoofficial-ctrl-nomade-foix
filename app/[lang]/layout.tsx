@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import CookieBanner from '../../components/CookieBanner';
+import SiteFooter from '../../components/SiteFooter';
 
 export const dynamicParams = false;
 const languages = ['fr', 'en', 'es'] as const;
@@ -34,5 +35,5 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
 export default async function LangLayout({ children, params }: { children: React.ReactNode; params: Promise<{ lang: string }> }) {
   const { lang: rawLang } = await params;
   if (!isLang(rawLang)) notFound();
-  return <>{children}<CookieBanner lang={rawLang} /></>;
+  return <>{children}<SiteFooter lang={rawLang} /><CookieBanner lang={rawLang} /></>;
 }
