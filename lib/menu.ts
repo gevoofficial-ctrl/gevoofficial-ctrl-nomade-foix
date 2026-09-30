@@ -99,6 +99,11 @@ export async function updateMenu(change: (items: Dish[]) => Dish[]): Promise<Dis
 
 export function sortedMenu(items: Dish[]) { return [...items].sort((a,b) => a.order - b.order || a.translations.fr.name.localeCompare(b.translations.fr.name)); }
 export function localized(d: Dish, lang: Lang): Translation {
-  void lang;
-  return d.translations.fr;
+  const french = d.translations.fr;
+  const translation = d.translations[lang];
+  return {
+    name: translation.name || french.name,
+    description: translation.description || french.description,
+    ingredients: translation.ingredients || french.ingredients,
+  };
 }

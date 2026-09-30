@@ -3,7 +3,43 @@ import Image from 'next/image';
 import Link from 'next/link';
 import HeroVideo from '../components/hero-video';
 import ReservationForm from '../components/reservation-form';
-import { localized, readMenu, sortedMenu } from '../../lib/menu';
+import { localized, readMenu, sortedMenu, type Dish } from '../../lib/menu';
+
+const homepageDishIds = [
+  '00000000-0000-4000-8000-000000000014',
+  '00000000-0000-4000-8000-000000000007',
+];
+
+const homepageDishMedia: Record<string, { src: string; alt: Record<'fr' | 'en' | 'es', string>; position: string }> = {
+  '00000000-0000-4000-8000-000000000014': {
+    src: '/images/ravioli.jpg',
+    alt: {
+      fr: 'Raviolis porc et bœuf servis dans leur sauce',
+      en: 'Pork and beef ravioli served in their sauce',
+      es: 'Raviolis de cerdo y ternera servidos en su salsa',
+    },
+    position: '50% 58%',
+  },
+  '00000000-0000-4000-8000-000000000007': {
+    src: '/images/magret.jpg',
+    alt: {
+      fr: 'Magret de canard et légumes de saison',
+      en: 'Duck breast with seasonal vegetables',
+      es: 'Magret de pato con verduras de temporada',
+    },
+    position: '50% 56%',
+  },
+};
+
+const cocktailCard = {
+  src: '/images/cocktails.jpg',
+  label: { fr: 'COCKTAILS', en: 'COCKTAILS', es: 'CÓCTELES' },
+  alt: {
+    fr: 'Trois cocktails colorés servis sur une table en marbre',
+    en: 'Three colourful cocktails served on a marble table',
+    es: 'Tres cócteles de colores servidos en una mesa de mármol',
+  },
+};
 
 const copy = {
   fr: {
@@ -64,7 +100,8 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
   const lang = (['fr','en','es'] as const).includes(rawLang as 'fr'|'en'|'es') ? rawLang as 'fr'|'en'|'es' : 'fr';
   const t=copy[lang];
   const alt=photoAlt[lang];
-  const dishes=sortedMenu(await readMenu()).filter(d => d.signature && d.available).slice(0, 3);
+  const menu=sortedMenu(await readMenu());
+  const dishes=homepageDishIds.map(id => menu.find(d => d.id === id)).filter((dish): dish is Dish => Boolean(dish));
   const event=eventCopy[lang];
   const footer=footerCopy[lang];
   const videoFallback=videoFallbackCopy[lang];
@@ -82,7 +119,7 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
 
     <section className="local section printSection"><div className="venuePhoto winePhoto"><Image src="/images/nomade-vin.webp" alt={alt.wine} fill sizes="(max-width: 800px) 88vw, 46vw" /></div><div className="localCopy"><p className="eyebrow">02 / ARIÈGE</p><h2>{t.local}</h2><p className="lead">{t.localText}</p><Link className="textLink" href={`/${lang}/carte`}>{t.menu} <ArrowUpRight size={16}/></Link></div></section>
 
-    <section id="menu" className="menuSection section"><div className="sectionHead"><div><p className="eyebrow">03 / {t.nav[1]}</p><h2>{t.signatures}</h2></div><Link className="button ghost" href={`/${lang}/carte`}>{t.menu}<ArrowUpRight size={16}/></Link></div><div className="dishes">{dishes.map(d => { const dish = localized(d, lang); return <article className="dish" key={d.id}>{d.imageUrl ? <div className="dishImage" style={{backgroundImage:`url('${d.imageUrl.replaceAll("'", '%27')}')`,backgroundSize:'cover',backgroundPosition:'center'}}/> : <div className="dishImage"/>}<div><h3>{dish.name}</h3><p>{dish.description}</p></div></article> })}</div>{dishes.length===0 && <p className="muted">{lang==='fr'?'La carte arrive bientôt.':lang==='en'?'The menu is coming soon.':'La carta estará disponible pronto.'}</p>}</section>
+    <section id="menu" className="menuSection section"><div className="sectionHead"><div><p className="eyebrow">03 / {t.nav[1]}</p><h2>{t.signatures}</h2></div><Link className="button ghost" href={`/${lang}/carte`}>{t.menu}<ArrowUpRight size={16}/></Link></div><div className="dishes">{dishes.map(d => { const dish = localized(d, lang); const media = homepageDishMedia[d.id]; return <article className="dish" key={d.id}><div className="dishImage dishImagePhoto"><Image src={media.src} alt={media.alt[lang]} fill sizes="(max-width: 800px) 88vw, 28vw" style={{ objectFit: 'cover', objectPosition: media.position }} /></div><div><h3>{dish.name}</h3><p>{dish.description}</p></div></article> })}<article className="dish dishPromo"><div className="dishImage dishImagePhoto"><Image src={cocktailCard.src} alt={cocktailCard.alt[lang]} fill sizes="(max-width: 800px) 88vw, 28vw" style={{ objectFit: 'cover', objectPosition: '50% 50%' }} /></div><div><h3>{cocktailCard.label[lang]}</h3></div></article></div>{dishes.length===0 && <p className="muted">{lang==='fr'?'La carte arrive bientôt.':lang==='en'?'The menu is coming soon.':'La carta estará disponible pronto.'}</p>}</section>
 
     {/* TODO: Validate this public-facing event copy with the restaurant before production publication. */}
     <section id="events" className="events section printSection"><div className="venuePhoto diningPhoto"><Image src="/images/nomade-salle.webp" alt={alt.dining} fill sizes="(max-width: 800px) 88vw, 46vw" /></div><div><p className="eyebrow">04 / NOMADE</p><h2>{t.events}</h2><p className="lead">{event.description}</p><a className="button" href="#contact">{event.cta}<ArrowUpRight size={16}/></a></div></section>

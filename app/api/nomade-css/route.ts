@@ -28,6 +28,8 @@ const photoCss = `
 .facadePhoto img{object-position:48% 50%}
 .exteriorPhotos .terracePhoto{position:absolute;right:0;bottom:0;width:46%;aspect-ratio:3/4;border:8px solid var(--bg)}
 .terracePhoto img{object-position:54% 50%}
+.dishImagePhoto:after{display:none}
+.dishImagePhoto img{object-fit:cover;pointer-events:none;user-select:none;-webkit-user-select:none;-webkit-user-drag:none;-webkit-touch-callout:none}
 @media(max-width:800px){
   .heroVideo{object-position:55% center}
   .printSection::before{background-size:780px auto}
