@@ -9,14 +9,14 @@
         "ingredients": "Échalotes, huile d’olive, gros sel"
       },
       "en": {
-        "name": "",
-        "description": "",
-        "ingredients": ""
+        "name": "TARTE TATIN",
+        "description": "A melting, delicately caramelised starter with a fresh, balanced finish.",
+        "ingredients": "Shallots, olive oil, coarse salt"
       },
       "es": {
-        "name": "",
-        "description": "",
-        "ingredients": ""
+        "name": "TARTA TATIN",
+        "description": "Un entrante fundente y delicadamente caramelizado, suave y fresco.",
+        "ingredients": "Chalotas, aceite de oliva, sal gruesa"
       }
     },
     "imageUrl": "",
@@ -34,14 +34,14 @@
         "ingredients": "Oignons, tomates confites"
       },
       "en": {
-        "name": "",
-        "description": "",
-        "ingredients": ""
+        "name": "AUBERGINE SOUFFLÉ",
+        "description": "A light yet generous aubergine dish built around Mediterranean flavours.",
+        "ingredients": "Onions, confit tomatoes"
       },
       "es": {
-        "name": "",
-        "description": "",
-        "ingredients": ""
+        "name": "BERENJENA SOUFFLÉ",
+        "description": "Una berenjena ligera y generosa, elaborada con sabores mediterráneos.",
+        "ingredients": "Cebollas, tomates confitados"
       }
     },
     "imageUrl": "",
@@ -59,14 +59,14 @@
         "ingredients": "Burrata au confit d’ail, feuille de basilic"
       },
       "en": {
-        "name": "",
-        "description": "",
-        "ingredients": ""
+        "name": "CHARRED PEPPER",
+        "description": "Smoky charred pepper lifted by the creamy freshness of burrata.",
+        "ingredients": "Burrata with garlic confit, basil leaf"
       },
       "es": {
-        "name": "",
-        "description": "",
-        "ingredients": ""
+        "name": "PIMIENTO ASADO AL FUEGO",
+        "description": "El carácter ahumado del pimiento realzado por la frescura cremosa de la burrata.",
+        "ingredients": "Burrata con ajo confitado, hoja de albahaca"
       }
     },
     "imageUrl": "",
@@ -84,14 +84,14 @@
         "ingredients": "Selon arrivage et inspiration de la cuisine"
       },
       "en": {
-        "name": "",
-        "description": "",
-        "ingredients": ""
+        "name": "STARTER SUGGESTION I",
+        "description": "A kitchen creation shaped by the season and the produce available.",
+        "ingredients": "According to market availability and the kitchen’s inspiration"
       },
       "es": {
-        "name": "",
-        "description": "",
-        "ingredients": ""
+        "name": "SUGERENCIA DE ENTRANTE I",
+        "description": "Una creación de cocina inspirada en los productos disponibles y la temporada.",
+        "ingredients": "Según disponibilidad e inspiración de la cocina"
       }
     },
     "imageUrl": "",
@@ -109,14 +109,14 @@
         "ingredients": "Selon arrivage et inspiration de la cuisine"
       },
       "en": {
-        "name": "",
-        "description": "",
-        "ingredients": ""
+        "name": "STARTER SUGGESTION II",
+        "description": "A second seasonal suggestion created around the day’s arrivals.",
+        "ingredients": "According to market availability and the kitchen’s inspiration"
       },
       "es": {
-        "name": "",
-        "description": "",
-        "ingredients": ""
+        "name": "SUGERENCIA DE ENTRANTE II",
+        "description": "Una segunda propuesta del momento, creada según los productos del día.",
+        "ingredients": "Según disponibilidad e inspiración de la cocina"
       }
     },
     "imageUrl": "",
@@ -134,14 +134,14 @@
         "ingredients": "Jus réduit Nomade, légumes de saison et condiment d’herbes fraîches préparé à la minute"
       },
       "en": {
-        "name": "",
-        "description": "",
-        "ingredients": ""
+        "name": "LAMB CHOP",
+        "description": "Wood-fired cooking brings out the tenderness of the meat, served with a deep, herbaceous jus.",
+        "ingredients": "NOMADE reduced jus, seasonal vegetables and a fresh-herb condiment made to order"
       },
       "es": {
-        "name": "",
-        "description": "",
-        "ingredients": ""
+        "name": "CHULETA DE CORDERO",
+        "description": "La cocción al fuego de leña realza una carne tierna, acompañada de un jugo intenso y herbáceo.",
+        "ingredients": "Jugo reducido NOMADE, verduras de temporada y un condimento de hierbas frescas preparado al momento"
       }
     },
     "imageUrl": "",
@@ -184,14 +184,14 @@
         "ingredients": "Selon arrivage et inspiration de la cuisine"
       },
       "en": {
-        "name": "",
-        "description": "",
-        "ingredients": ""
+        "name": "DISH OF THE MOMENT",
+        "description": "An ever-changing plate guided by market arrivals, the season and the kitchen’s inspiration.",
+        "ingredients": "According to market availability and the kitchen’s inspiration"
       },
       "es": {
-        "name": "",
-        "description": "",
-        "ingredients": ""
+        "name": "PLATO DEL MOMENTO",
+        "description": "Un plato efímero guiado por los productos disponibles, la temporada y la inspiración de la cocina.",
+        "ingredients": "Según disponibilidad e inspiración de la cocina"
       }
     },
     "imageUrl": "",
@@ -209,14 +209,14 @@
         "ingredients": "Aubergine à la Génésis ou risotto. S’adresser au serveur."
       },
       "en": {
-        "name": "",
-        "description": "",
-        "ingredients": ""
+        "name": "SEASONAL VEGETABLE DISH",
+        "description": "A generous vegetable-led plate built around seasonal produce.",
+        "ingredients": "Aubergine à la Génésis or risotto. Please ask your server."
       },
       "es": {
-        "name": "",
-        "description": "",
-        "ingredients": ""
+        "name": "VEGETAL DEL MOMENTO",
+        "description": "Un plato vegetal generoso, elaborado en torno a productos de temporada.",
+        "ingredients": "Berenjena à la Génésis o risotto. Consulte al camarero."
       }
     },
     "imageUrl": "",
@@ -234,14 +234,14 @@
         "ingredients": "Beurre blanc, légumes du moment"
       },
       "en": {
-        "name": "",
-        "description": "",
-        "ingredients": ""
+        "name": "FISH OF THE MOMENT",
+        "description": "The day’s fish prepared simply, served with a silky sauce and seasonal vegetables.",
+        "ingredients": "Beurre blanc, seasonal vegetables"
       },
       "es": {
-        "name": "",
-        "description": "",
-        "ingredients": ""
+        "name": "PESCADO DEL MOMENTO",
+        "description": "El pescado del día preparado con sencillez, acompañado de una salsa untuosa y verduras de temporada.",
+        "ingredients": "Beurre blanc, verduras de temporada"
       }
     },
     "imageUrl": "",
@@ -259,14 +259,14 @@
         "ingredients": "Sélection de fromages"
       },
       "en": {
-        "name": "",
-        "description": "",
-        "ingredients": ""
+        "name": "CHEESE PLATE",
+        "description": "A selection of cheeses to enjoy at the end of the meal.",
+        "ingredients": "Selection of cheeses"
       },
       "es": {
-        "name": "",
-        "description": "",
-        "ingredients": ""
+        "name": "TABLA DE QUESOS",
+        "description": "Una selección de quesos para disfrutar al final de la comida.",
+        "ingredients": "Selección de quesos"
       }
     },
     "imageUrl": "",
@@ -284,14 +284,14 @@
         "ingredients": "Huile d’olive, gros sel"
       },
       "en": {
-        "name": "",
-        "description": "",
-        "ingredients": ""
+        "name": "CHOCOLATE MOUSSE",
+        "description": "An intense, airy mousse finished with a touch of olive oil and salt.",
+        "ingredients": "Olive oil, coarse salt"
       },
       "es": {
-        "name": "",
-        "description": "",
-        "ingredients": ""
+        "name": "MOUSSE DE CHOCOLATE",
+        "description": "Una mousse intensa y aireada, realzada con un toque de aceite de oliva y sal.",
+        "ingredients": "Aceite de oliva, sal gruesa"
       }
     },
     "imageUrl": "",
@@ -309,14 +309,14 @@
         "ingredients": "Selon arrivage et inspiration de la cuisine"
       },
       "en": {
-        "name": "",
-        "description": "",
-        "ingredients": ""
+        "name": "DESSERT OF THE MOMENT",
+        "description": "A sweet creation that evolves with the seasons and the kitchen’s inspiration.",
+        "ingredients": "According to market availability and the kitchen’s inspiration"
       },
       "es": {
-        "name": "",
-        "description": "",
-        "ingredients": ""
+        "name": "POSTRE DEL MOMENTO",
+        "description": "Una creación dulce que evoluciona al ritmo de las estaciones y de la inspiración.",
+        "ingredients": "Según disponibilidad e inspiración de la cocina"
       }
     },
     "imageUrl": "",
