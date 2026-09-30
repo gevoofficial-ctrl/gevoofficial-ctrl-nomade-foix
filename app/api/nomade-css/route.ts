@@ -47,6 +47,9 @@ const photoCss = `
   .exteriorPhotos{margin-top:40px}
   .exteriorPhotos .terracePhoto{border-width:6px}
 }
+.cookieSettings{position:fixed;right:18px;bottom:18px;z-index:45;border:1px solid var(--line);padding:9px 12px;background:rgba(13,12,10,.94);color:var(--muted);font-size:9px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer}
+.cookieSettings:hover,.cookieSettings:focus-visible{border-color:var(--accent);color:var(--paper);outline:none}
+@media(max-width:800px){.cookieSettings{right:12px;bottom:12px;font-size:8px;padding:8px 10px}}
 `;
 
 export const dynamic = 'force-static';
