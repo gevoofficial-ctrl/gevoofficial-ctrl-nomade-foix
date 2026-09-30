@@ -36,6 +36,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         {/* The API route is deliberate: it keeps the stylesheet URL stable for staging caches. */}
         {/* eslint-disable-next-line @next/next/no-css-tags */}
         <link rel="stylesheet" href="/api/nomade-css?v=12" />
+        <meta name="msvalidate.01" content="6765DEE9694A7BEA83306F67874B81D8" />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(restaurantStructuredData) }} />
       </head>
       <body>{children}</body>
