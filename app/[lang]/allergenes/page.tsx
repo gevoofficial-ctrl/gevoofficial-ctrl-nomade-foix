@@ -1,5 +1,7 @@
 import { ArrowUpRight } from 'lucide-react';
+import type { Metadata } from 'next';
 import Link from 'next/link';
+import { isSiteLanguage, pageMetadata } from '../../../lib/seo';
 
 const allergens = {
   fr: [
@@ -27,10 +29,17 @@ const allergens = {
 };
 
 const copy = {
-  fr:{title:'Allergènes',intro:'Information sur les allergènes',text:'Conformément à la réglementation européenne, voici les 14 catégories d’allergènes faisant l’objet d’une déclaration obligatoire.',notice:'Vous avez une allergie ou une intolérance ?',noticeText:'Merci d’en informer notre équipe avant de commander. La composition des plats peut évoluer et, malgré toutes les précautions prises en cuisine, un contact croisé avec d’autres allergènes ne peut pas être totalement exclu.',dishTitle:'Allergènes dans nos plats',dishText:'La liste détaillée des allergènes présents dans chaque plat sera publiée ici après validation de la composition par l’équipe NOMADE.',back:'Retour au site'},
-  en:{title:'Allergens',intro:'Allergen information',text:'In accordance with European regulations, these are the 14 categories of allergens subject to mandatory declaration.',notice:'Do you have an allergy or intolerance?',noticeText:'Please inform our team before ordering. Dish composition may change and, despite precautions in the kitchen, cross-contact with other allergens cannot be completely excluded.',dishTitle:'Allergens in our dishes',dishText:'The detailed list of allergens present in each dish will be published here once the composition has been validated by the NOMADE team.',back:'Back to site'},
-  es:{title:'Alérgenos',intro:'Información sobre alérgenos',text:'De acuerdo con la normativa europea, estas son las 14 categorías de alérgenos de declaración obligatoria.',notice:'¿Tienes alguna alergia o intolerancia?',noticeText:'Informa a nuestro equipo antes de pedir. La composición de los platos puede cambiar y, a pesar de las precauciones en cocina, no se puede excluir por completo el contacto cruzado con otros alérgenos.',dishTitle:'Alérgenos en nuestros platos',dishText:'La lista detallada de alérgenos presentes en cada plato se publicará aquí una vez que el equipo de NOMADE haya validado su composición.',back:'Volver al sitio'}
+  fr:{title:'Allergènes',description:'Informations sur les allergènes chez NOMADE, restaurant à Foix.',intro:'Information sur les allergènes',text:'Conformément à la réglementation européenne, voici les 14 catégories d’allergènes faisant l’objet d’une déclaration obligatoire.',notice:'Vous avez une allergie ou une intolérance ?',noticeText:'Merci d’en informer notre équipe avant de commander. La composition des plats peut évoluer et, malgré toutes les précautions prises en cuisine, un contact croisé avec d’autres allergènes ne peut pas être totalement exclu.',dishTitle:'Allergènes dans nos plats',dishText:'La liste détaillée des allergènes présents dans chaque plat sera publiée ici après validation de la composition par l’équipe NOMADE.',back:'Retour au site'},
+  en:{title:'Allergens',description:'Allergen information for NOMADE, restaurant in Foix.',intro:'Allergen information',text:'In accordance with European regulations, these are the 14 categories of allergens subject to mandatory declaration.',notice:'Do you have an allergy or intolerance?',noticeText:'Please inform our team before ordering. Dish composition may change and, despite precautions in the kitchen, cross-contact with other allergens cannot be completely excluded.',dishTitle:'Allergens in our dishes',dishText:'The detailed list of allergens present in each dish will be published here once the composition has been validated by the NOMADE team.',back:'Back to site'},
+  es:{title:'Alérgenos',description:'Información sobre alérgenos en NOMADE, restaurante en Foix.',intro:'Información sobre alérgenos',text:'De acuerdo con la normativa europea, estas son las 14 categorías de alérgenos de declaración obligatoria.',notice:'¿Tienes alguna alergia o intolerancia?',noticeText:'Informa a nuestro equipo antes de pedir. La composición de los platos puede cambiar y, a pesar de las precauciones en cocina, no se puede excluir por completo el contacto cruzado con otros alérgenos.',dishTitle:'Alérgenos en nuestros platos',dishText:'La lista detallada de alérgenos presentes en cada plato se publicará aquí una vez que el equipo de NOMADE haya validado su composición.',back:'Volver al sitio'}
 };
+
+export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
+  const { lang: rawLang } = await params;
+  if (!isSiteLanguage(rawLang)) return {};
+  const t = copy[rawLang];
+  return pageMetadata(rawLang, '/allergenes', `${t.title} | NOMADE — Foix`, t.description);
+}
 
 export default async function Allergenes({params}:{params:Promise<{lang:string}>}){
   const {lang:rawLang}=await params;

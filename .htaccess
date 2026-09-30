@@ -1,0 +1,7 @@
+RewriteEngine On
+
+# Keep every public visit on the single HTTPS hostname before Passenger/Next.js
+# receives the request. The application proxy repeats this rule as a safeguard.
+RewriteCond %{HTTPS} !=on [OR]
+RewriteCond %{HTTP_HOST} !^www\.nomade-foix\.fr$ [NC]
+RewriteRule ^ https://www.nomade-foix.fr%{REQUEST_URI} [R=301,L]

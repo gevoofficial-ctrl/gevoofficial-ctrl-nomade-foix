@@ -106,7 +106,7 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
     <header className="header"><Link className="logo" href={`/${lang}#top`} aria-label="Nomade"><Image src="/nomade-logo-light.svg" alt="NOMADE" width={2933} height={1000} priority /></Link><nav>{t.nav.map((n,i)=><a key={n} href={navLinks[i]}>{n}</a>)}</nav><div className="tools"><div className="langs">{(['fr','en','es'] as const).map(l=><Link key={l} className={lang===l?'active':''} href={`/${l}`}>{l.toUpperCase()}</Link>)}</div></div></header>
     <details className="mobileMenu">
       <summary aria-label="Menu"><span></span><span></span><span></span></summary>
-      <div className="mobileNav">{t.nav.map((n,i)=><a key={n} href={navLinks[i]}>{n}</a>)}<div className="langs mobileLangs">{(['fr','en','es'] as const).map(l=><Link key={l} className={lang===l?'active':''} href={`/${l}`}>{l.toUpperCase()}</Link>)}</div></div>
+      <div className="mobileNav">{t.nav.map((n,i)=><a key={n} href={navLinks[i]} aria-label={n}>{n}</a>)}<div className="langs mobileLangs">{(['fr','en','es'] as const).map(l=><Link key={l} className={lang===l?'active':''} href={`/${l}`} aria-label={l.toUpperCase()}>{l.toUpperCase()}</Link>)}</div></div>
     </details>
 
     <section id="top" className="hero"><div className="heroMedia heroMediaVideo" aria-hidden="true"><HeroVideo fallback={videoFallback} /></div><div className="heroContent"><span>{t.heroKicker}</span><h1>NOMADE</h1><p className="heroTitle">{t.heroTitle}</p><p className="heroSub">{t.heroSub}</p><a className="button" href="#reservation">{t.reserve}<ArrowUpRight size={16}/></a></div><a className="scroll" href="#house"><ArrowDown size={16}/>{t.discover}</a></section>

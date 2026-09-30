@@ -23,10 +23,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority,
       alternates: {
         languages: Object.fromEntries(
-          (Object.keys(languages) as Array<keyof typeof languages>).map((alternateLang) => [
-            alternateLang,
-            `${languages[alternateLang]}${path}`,
-          ]),
+          [
+            ...(Object.keys(languages) as Array<keyof typeof languages>).map((alternateLang) => [
+              alternateLang,
+              `${languages[alternateLang]}${path}`,
+            ]),
+            ['x-default', `${languages.fr}${path}`],
+          ],
         ),
       },
     })),

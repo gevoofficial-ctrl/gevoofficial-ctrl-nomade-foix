@@ -2,14 +2,13 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import CookieBanner from '../../components/CookieBanner';
 import SiteFooter from '../../components/SiteFooter';
+import { isSiteLanguage, pageMetadata } from '../../lib/seo';
 
 export const dynamicParams = false;
 const languages = ['fr', 'en', 'es'] as const;
 type Lang = typeof languages[number];
 
-function isLang(value: string): value is Lang {
-  return (languages as readonly string[]).includes(value);
-}
+function isLang(value: string): value is Lang { return isSiteLanguage(value); }
 
 const meta = {
   fr: { title: 'NOMADE — Restaurant · Bar · Foix', description: 'Cuisine au feu, produits locaux, influences du monde.' },
@@ -21,15 +20,7 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
   const { lang: rawLang } = await params;
   if (!isLang(rawLang)) notFound();
   const m = meta[rawLang];
-  return {
-    title: m.title,
-    description: m.description,
-    alternates: {
-      canonical: 'https://www.nomade-foix.fr/' + rawLang,
-      languages: { fr: '/fr', en: '/en', es: '/es' }
-    },
-    openGraph: { title: m.title, description: m.description, locale: rawLang }
-  };
+  return pageMetadata(rawLang, '', m.title, m.description);
 }
 
 export default async function LangLayout({ children, params }: { children: React.ReactNode; params: Promise<{ lang: string }> }) {

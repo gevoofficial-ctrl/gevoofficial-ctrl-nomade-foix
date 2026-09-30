@@ -51,6 +51,12 @@ const photoCss = `
 }
 .footerCookieSettings{margin:0;padding:0;border:0;background:transparent;color:inherit;font:inherit;text-transform:inherit;letter-spacing:inherit;cursor:pointer}
 .footerCookieSettings:hover,.footerCookieSettings:focus-visible{color:var(--paper);outline:none}
+.srOnly{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.notFoundPage{min-height:100svh;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;padding:12vw 8vw}
+.notFoundPage h1{font:400 clamp(46px,8vw,104px)/.95 'Playfair Display',serif;letter-spacing:-.04em;margin:18px 0}
+.notFoundPage .button{margin-top:18px}
+footer a,footer button{display:inline-flex;align-items:center;min-height:44px}
+@media(max-width:800px){.mobileMenu{top:12px;right:calc(6vw - 8px);padding:0}.mobileMenu summary{width:44px;height:44px;align-items:center}.mobileNav a,.mobileNav .langs a{display:flex;align-items:center;min-height:44px;padding:0}.cookieActions .button{min-height:44px}.notFoundPage{padding:28vw 6vw}}
 `;
 
 export const dynamic = 'force-static';
