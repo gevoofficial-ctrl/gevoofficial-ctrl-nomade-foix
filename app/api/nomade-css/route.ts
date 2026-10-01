@@ -61,8 +61,13 @@ footer a,footer button{display:inline-flex;align-items:center;min-height:44px}
 
 export const dynamic = 'force-static';
 
+const cssWithoutFontImport = css.replace(
+  /^@import url\('https:\/\/fonts\.googleapis\.com\/css2\?family=DM\+Sans:wght@300;400;500&family=Playfair\+Display:wght@400;500;600&display=swap'\);\n/,
+  '',
+);
+
 export function GET() {
-  return new NextResponse(css + photoCss, {
+  return new NextResponse(cssWithoutFontImport + photoCss, {
     headers: {
       'Content-Type': 'text/css; charset=utf-8',
       'Cache-Control': 'public, max-age=31536000, immutable',

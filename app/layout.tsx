@@ -34,6 +34,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang={lang}>
       <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        {/* eslint-disable-next-line @next/next/no-page-custom-font */}
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=Playfair+Display:wght@400;500;600&display=swap" />
+        <link rel="preload" as="image" href="/video/nomade-hero-poster.jpg" media="(max-width: 800px)" fetchPriority="high" />
         {/* The API route is deliberate: it keeps the stylesheet URL stable for staging caches. */}
         {/* eslint-disable-next-line @next/next/no-css-tags */}
         <link rel="stylesheet" href="/api/nomade-css?v=12" />
