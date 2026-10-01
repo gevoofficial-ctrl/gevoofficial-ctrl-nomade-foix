@@ -11,6 +11,7 @@ const playbackRate = 0.65;
 export default function HeroVideo({ fallback }: HeroVideoProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [loadMobileVideo, setLoadMobileVideo] = useState(false);
+  const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -41,13 +42,14 @@ export default function HeroVideo({ fallback }: HeroVideoProps) {
   return (
     <video
       ref={videoRef}
-      className="heroVideo"
+      className={`heroVideo${isReady ? ' heroVideoReady' : ''}`}
       autoPlay
       muted
       loop
       playsInline
       preload="metadata"
       poster="/video/nomade-hero-poster.jpg"
+      onCanPlay={() => setIsReady(true)}
     >
       <source media="(min-width: 801px)" src="/video/nomade-hero.mp4" type="video/mp4" />
       {loadMobileVideo && <source media="(max-width: 800px)" src="/video/nomade-hero.mp4" type="video/mp4" />}

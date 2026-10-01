@@ -41,7 +41,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <link rel="preload" as="image" href="/video/nomade-hero-poster.jpg" media="(max-width: 800px)" fetchPriority="high" />
         {/* The API route is deliberate: it keeps the stylesheet URL stable for staging caches. */}
         {/* eslint-disable-next-line @next/next/no-css-tags */}
-        <link rel="stylesheet" href="/api/nomade-css?v=12" />
+        <link rel="stylesheet" href="/api/nomade-css?v=13" />
         <meta name="msvalidate.01" content="6765DEE9694A7BEA83306F67874B81D8" />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(restaurantStructuredData) }} />
       </head>

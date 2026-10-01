@@ -10,6 +10,11 @@ const photoCss = `
 .heroVideo{position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:cover;object-position:55% center}
 .heroMediaVideo::before{content:'';z-index:1;background:linear-gradient(90deg,rgba(8,7,6,.84),rgba(8,7,6,.46) 56%,rgba(8,7,6,.66)),linear-gradient(0deg,rgba(8,7,6,.88),rgba(8,7,6,.18) 48%,rgba(8,7,6,.3))}
 .heroContent,.scroll{z-index:2}
+@media(min-width:801px){
+  .heroMediaVideo{background:#19120d url('/video/nomade-hero-poster.jpg') 55% center/cover no-repeat}
+  .heroVideo{opacity:0;transition:opacity .42s ease-out}
+  .heroVideo.heroVideoReady{opacity:1}
+}
 .venuePhoto{position:relative;overflow:hidden;background:#191610}
 .venuePhoto img{object-fit:cover;pointer-events:none;user-select:none;-webkit-user-select:none;-webkit-user-drag:none;-webkit-touch-callout:none}
 .split{gap:0;align-items:stretch;padding-bottom:clamp(40px,5vw,80px)}
