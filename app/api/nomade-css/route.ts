@@ -12,8 +12,9 @@ const photoCss = `
 .heroContent,.scroll{z-index:2}
 @media(min-width:801px){
   .heroMediaVideo{background:#19120d url('/video/nomade-hero-poster.jpg') 55% center/cover no-repeat}
-  .heroVideo{opacity:0;transition:opacity .42s ease-out}
+  .heroVideo{opacity:0;filter:brightness(1);transition:opacity .42s ease-out,filter .42s ease-out}
   .heroVideo.heroVideoReady{opacity:1}
+  .heroVideo.heroVideoLoopFade{opacity:.12;filter:brightness(.48);transition:opacity .5s ease-in,filter .5s ease-in}
 }
 .venuePhoto{position:relative;overflow:hidden;background:#191610}
 .venuePhoto img{object-fit:cover;pointer-events:none;user-select:none;-webkit-user-select:none;-webkit-user-drag:none;-webkit-touch-callout:none}
