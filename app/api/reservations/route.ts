@@ -54,20 +54,6 @@ export async function POST(request: NextRequest) {
       text:`Nouvelle demande de réservation (à confirmer)\n\nNom : ${name}\nTéléphone : ${phone}\nDate : ${date}\nHeure : ${time} (Foix)\nPersonnes : ${guests}\n\nCette demande ne confirme pas la réservation. Veuillez contacter le client.`,
     });
 
-    // Keep the email flow authoritative: a temporary Sheets failure must not lose a reservation.
-    const sheetsWebhook = 'https://script.google.com/macros/s/AKfycbxHLjwlpvcv4BmZEBojh3iG8dejFOoPt-3_XyD114NFVLUAEjDHqG6YNToJfLD7WEveWg/exec';
-    try {
-      const sheetsResponse = await fetch(sheetsWebhook, {
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({ name, phone, date, time, guests }),
-        signal:AbortSignal.timeout(8000),
-      });
-      if (!sheetsResponse.ok) console.error('Reservation Sheets webhook failed:', sheetsResponse.status);
-    } catch (error) {
-      console.error('Reservation Sheets webhook error:', error);
-    }
-
     return NextResponse.json({ ok:true });
   } catch {
     return NextResponse.json({ error:'Unable to send the request. Please call the restaurant.' }, { status:502 });
