@@ -1,6 +1,14 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  async redirects() {
+    return [
+      { source: '/lesmenu', destination: '/fr/carte', permanent: true },
+      { source: '/lesmenu/', destination: '/fr/carte', permanent: true },
+      { source: '/mentions-legales', destination: '/fr/mentions-legales', permanent: true },
+      { source: '/mentions-legales/', destination: '/fr/mentions-legales', permanent: true },
+    ];
+  },
   async headers() {
     return [
       {
