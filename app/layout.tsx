@@ -12,19 +12,40 @@ export const metadata: Metadata = {
 const restaurantStructuredData = {
   '@context': 'https://schema.org',
   '@type': 'Restaurant',
+  '@id': `${siteUrl}/#restaurant`,
   name: 'NOMADE',
+  alternateName: 'Le Nomade',
+  description: 'Restaurant bistronomique et bar à Foix : cuisine au feu, produits locaux ariégeois et influences du monde.',
   url: `${siteUrl}/fr`,
-  image: `${siteUrl}/video/nomade-hero-poster.jpg`,
+  mainEntityOfPage: `${siteUrl}/fr`,
+  image: [
+    `${siteUrl}/video/nomade-hero-poster.jpg`,
+    `${siteUrl}/images/nomade-facade.webp`,
+    `${siteUrl}/images/nomade-interieur.webp`,
+  ],
+  logo: `${siteUrl}/nomade-logo-light.svg`,
   telephone: '+33745262823',
   email: 'nomaderestaubar@gmail.com',
+  hasMenu: `${siteUrl}/fr/carte`,
+  servesCuisine: ['Cuisine bistronomique', 'Cuisine au feu de bois', 'Cuisine locavore', 'Cuisine aux influences internationales'],
   address: {
     '@type': 'PostalAddress',
     streetAddress: '42 Rue des Chapeliers',
     postalCode: '09000',
     addressLocality: 'Foix',
+    addressRegion: 'Occitanie',
     addressCountry: 'FR',
   },
-  sameAs: ['https://www.instagram.com/nomaderestaubar/'],
+  geo: {
+    '@type': 'GeoCoordinates',
+    latitude: 42.96527,
+    longitude: 1.60549,
+  },
+  areaServed: {
+    '@type': 'City',
+    name: 'Foix',
+  },
+  sameAs: ['https://www.instagram.com/nomadefoix/'],
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
