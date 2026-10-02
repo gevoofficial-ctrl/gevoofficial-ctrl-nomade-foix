@@ -54,6 +54,21 @@ export async function POST(request: NextRequest) {
       text:`Nouvelle demande de réservation (à confirmer)\n\nNom : ${name}\nTéléphone : ${phone}\nDate : ${date}\nHeure : ${time} (Foix)\nPersonnes : ${guests}\n\nCette demande ne confirme pas la réservation. Veuillez contacter le client.`,
     });
 
+    // Mirror each valid reservation request to the NOMADE reservations sheet.
+    // Email remains authoritative: a temporary Sheets failure must not lose the request.
+    const sheetsWebhook = 'https://script.google.com/macros/s/AKfycbyIyOWq3t4XFYFjZJGpEYJpYvfOmriYIP8-PIAORzf2KBtWChSr1RT1rMqi4TQSJRuY/exec';
+    try {
+      const sheetsResponse = await fetch(sheetsWebhook, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({ name, phone, date, time, guests }),
+        signal:AbortSignal.timeout(8000),
+      });
+      if (!sheetsResponse.ok) console.error('Reservation Sheets webhook failed:', sheetsResponse.status);
+    } catch (error) {
+      console.error('Reservation Sheets webhook error:', error);
+    }
+
     return NextResponse.json({ ok:true });
   } catch {
     return NextResponse.json({ error:'Unable to send the request. Please call the restaurant.' }, { status:502 });
