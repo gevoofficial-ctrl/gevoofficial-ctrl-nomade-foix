@@ -7,6 +7,9 @@ import './reservation.css';
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
+  verification: {
+    google: 'oWAKBaBz9YyePh8wAI3OsoB6aqU_Z60_Wi_eGYCO8-s',
+  },
 };
 
 const restaurantStructuredData = {
