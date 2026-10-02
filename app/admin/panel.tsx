@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import Link from 'next/link';
 import type { Dish } from '../../lib/menu';
 import './panel.css';
 
@@ -73,7 +74,7 @@ export default function AdminPanel() {
     {status === 'unconfigured' && <p>Configurez NOMADE_ADMIN_PASSWORD et NOMADE_ADMIN_SECRET (32 caractères minimum) dans les variables d’environnement du serveur.</p>}
     {status === 'locked' && <form className="adminLogin" onSubmit={login}><h2>Connexion</h2><label>Mot de passe<input type="password" autoComplete="current-password" value={password} onChange={e=>setPassword(e.target.value)} required /></label><button disabled={busy}>Se connecter</button></form>}
     {status === 'ready' && <>
-      <div className="adminToolbar"><p>{items.length} plat{items.length !== 1 && 's'}</p><button onClick={()=>{setDraft(blank());setMessage('')}}>+ Ajouter un plat</button><a href="/fr/carte" target="_blank" rel="noreferrer">Voir la carte ↗</a></div>
+      <div className="adminToolbar"><p>{items.length} plat{items.length !== 1 && 's'}</p><Link href="/admin/reservations">Voir les réservations</Link><button onClick={()=>{setDraft(blank());setMessage('')}}>+ Ajouter un plat</button><a href="/fr/carte" target="_blank" rel="noreferrer">Voir la carte ↗</a></div>
       <div className="adminList">{items.map(d => <article key={d.id}><div><strong>{d.translations.fr.name}</strong><small>{d.category} · {d.available?'Disponible':'Indisponible'} {d.signature && '· ★ Accueil'}</small></div><button onClick={()=>{setDraft(structuredClone(d));setMessage('')}}>Modifier</button></article>)}</div>
       {draft && <form className="adminEditor" onSubmit={save}>
         <div className="adminEditorTop"><h2>{draft.id?'Modifier le plat':'Ajouter un plat'}</h2><button type="button" onClick={()=>setDraft(null)}>Fermer ×</button></div>
