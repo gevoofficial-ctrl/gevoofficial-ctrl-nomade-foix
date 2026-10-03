@@ -1,0 +1,50 @@
+.calendarGrid > button.closed {
+  background: repeating-linear-gradient(135deg, rgba(104, 52, 45, .2), rgba(104, 52, 45, .2) 7px, rgba(10, 9, 7, .2) 7px, rgba(10, 9, 7, .2) 14px);
+}
+
+.calendarClosed {
+  position: absolute;
+  right: 9px;
+  top: 10px;
+  color: #e2aaa2;
+  font-size: 9px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.closureControl {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 22px;
+  margin: 22px 0 0;
+  padding: 16px 18px;
+  border: 1px solid #4a4439;
+  background: #15130f;
+}
+
+.closureControl div { display: grid; gap: 5px; }
+.closureControl strong { font: 400 19px 'Playfair Display', serif; }
+.closureControl span { color: #aaa18f; font-size: 11px; }
+.closureControl.isClosed { border-color: #80534d; background: rgba(83, 37, 32, .2); }
+.closureControl.isClosed strong { color: #e2aaa2; }
+
+.closureControl button {
+  flex: 0 0 auto;
+  border: 1px solid #82745d;
+  background: transparent;
+  color: #e9e1d1;
+  padding: 11px 15px;
+  cursor: pointer;
+  font: 400 12px 'DM Sans', sans-serif;
+}
+
+.closureControl button:hover { background: #c9b28a; color: #15120e; }
+.closureControl button:disabled { opacity: .45; cursor: wait; }
+.closureControl button:focus-visible { outline: 2px solid #c9b28a; outline-offset: 2px; }
+
+@media (max-width: 700px) {
+  .calendarClosed { right: 6px; top: 7px; font-size: 7px; letter-spacing: 0; }
+  .closureControl { align-items: flex-start; flex-direction: column; }
+  .closureControl button { width: 100%; min-height: 44px; }
+}

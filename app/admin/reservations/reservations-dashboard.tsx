@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import './reservations.css';
+import './closures.css';
 
 const STATUSES = [
   'En attente de confirmation',
@@ -27,6 +28,8 @@ type Reservation = {
   comment:string;
   editable:boolean;
 };
+
+type Closure = { date:string; message:string };
 
 const pad = (value:number) => String(value).padStart(2, '0');
 const isoDate = (year:number, month:number, day:number) => `${year}-${pad(month + 1)}-${pad(day)}`;
@@ -100,6 +103,20 @@ function normalize(payload:unknown):Reservation[] {
       editable:id !== undefined || row !== undefined || rowNumber !== undefined,
     };
   }).filter(item => item.date);
+}
+
+function normalizeClosures(payload:unknown):Closure[] {
+  const record = asRecord(payload);
+  const values = Array.isArray(record?.closedDates) ? record.closedDates : [];
+  return values.flatMap(value => {
+    if (typeof value === 'string') {
+      const date = cleanDate(value);
+      return date ? [{ date, message:'' }] : [];
+    }
+    const item = asRecord(value);
+    const date = cleanDate(item?.date);
+    return date ? [{ date, message:typeof item?.message === 'string' ? item.message : '' }] : [];
+  });
 }
 
 async function requestJson(url:string, options?:RequestInit) {
@@ -192,13 +209,17 @@ export default function ReservationsDashboard() {
   const [auth, setAuth] = useState<'loading'|'locked'|'ready'|'unconfigured'>('loading');
   const [password, setPassword] = useState('');
   const [reservations, setReservations] = useState<Reservation[]>([]);
+  const [closures, setClosures] = useState<Closure[]>([]);
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState('');
 
   const load = useCallback(async () => {
     setLoading(true);
-    try { setReservations(normalize(await requestJson('/api/admin/reservations'))); }
+    try {
+      const payload = await requestJson('/api/admin/reservations');
+      setReservations(normalize(payload)); setClosures(normalizeClosures(payload));
+    }
     finally { setLoading(false); }
   }, []);
 
@@ -218,6 +239,8 @@ export default function ReservationsDashboard() {
   }, [reservations]);
   const selectedReservations = byDate.get(selected) ?? [];
   const totalGuests = selectedReservations.reduce((sum, item) => sum + item.guests, 0);
+  const closedDateSet = useMemo(() => new Set(closures.map(item => item.date)), [closures]);
+  const selectedClosed = closedDateSet.has(selected);
 
   const days = useMemo(() => {
     const first = new Date(Date.UTC(year, month, 1));
@@ -248,6 +271,18 @@ export default function ReservationsDashboard() {
     finally { setSaving(''); }
   }
 
+  async function setClosure(closed:boolean) {
+    setSaving(`closure-${selected}`); setMessage('');
+    try {
+      await requestJson('/api/admin/reservations', {
+        method:'POST', body:JSON.stringify({ action:'setClosure', date:selected, closed }),
+      });
+      await load();
+      setMessage(closed ? 'Le restaurant est maintenant fermé pour cette date.' : 'Cette date est de nouveau ouverte aux réservations.');
+    } catch (error) { setMessage((error as Error).message); }
+    finally { setSaving(''); }
+  }
+
   function moveMonth(delta:number) {
     const next = new Date(Date.UTC(year, month + delta, 1));
     const nextYear = next.getUTCFullYear(), nextMonth = next.getUTCMonth();
@@ -261,7 +296,7 @@ export default function ReservationsDashboard() {
 
   async function logout() {
     await requestJson('/api/admin/session', { method:'DELETE' });
-    setAuth('locked'); setReservations([]);
+    setAuth('locked'); setReservations([]); setClosures([]);
   }
 
   return <main className="reservationsPage">
@@ -283,13 +318,15 @@ export default function ReservationsDashboard() {
         <div className="calendarGrid">{days.map(day => {
           const date = isoDate(day.year, day.month, day.day);
           const count = byDate.get(date)?.length ?? 0;
-          return <button type="button" key={date} className={`${day.month !== month ? 'outside ' : ''}${date === selected ? 'selected ' : ''}${date === today ? 'today' : ''}`} onClick={() => { setSelected(date); setYear(day.year); setMonth(day.month); }} aria-label={`${date}, ${count} réservation${count === 1 ? '' : 's'}`}>
-            <span className="calendarDayNumber">{day.day}</span>{count > 0 && <span className="calendarCount"><i />{count}</span>}
+          const closed = closedDateSet.has(date);
+          return <button type="button" key={date} className={`${day.month !== month ? 'outside ' : ''}${date === selected ? 'selected ' : ''}${date === today ? 'today ' : ''}${closed ? 'closed' : ''}`} onClick={() => { setSelected(date); setYear(day.year); setMonth(day.month); }} aria-label={`${date}, ${closed ? 'restaurant fermé, ' : ''}${count} réservation${count === 1 ? '' : 's'}`}>
+            <span className="calendarDayNumber">{day.day}</span>{closed && <span className="calendarClosed">Fermé</span>}{count > 0 && <span className="calendarCount"><i />{count}</span>}
           </button>;
         })}</div>
       </section>
       <section className="dayPanel">
         <div className="daySummary"><div><span className="reservationsEyebrow">JOUR SÉLECTIONNÉ</span><h2>{new Intl.DateTimeFormat('fr-FR', { dateStyle:'full', timeZone:'UTC' }).format(new Date(`${selected}T00:00:00Z`))}</h2></div><div className="dayTotals"><strong>{selectedReservations.length}</strong><span>réservation{selectedReservations.length === 1 ? '' : 's'}</span><strong>{totalGuests}</strong><span>personne{totalGuests === 1 ? '' : 's'}</span></div></div>
+        <div className={`closureControl ${selectedClosed ? 'isClosed' : ''}`}><div><strong>{selectedClosed ? 'Restaurant fermé' : 'Restaurant ouvert'}</strong><span>{selectedClosed ? 'Aucune nouvelle demande ne sera acceptée pour cette date.' : 'Les clients peuvent demander une réservation pour cette date.'}</span></div><button type="button" disabled={saving === `closure-${selected}`} onClick={() => setClosure(!selectedClosed)}>{saving === `closure-${selected}` ? 'Enregistrement…' : selectedClosed ? 'Rouvrir ce jour' : 'Fermer ce jour'}</button></div>
         {selectedReservations.length === 0 ? <div className="emptyDay"><span>—</span><p>Aucune réservation pour cette date.</p></div> : <div className="reservationList">{selectedReservations.map(reservation => <ReservationCard key={`${reservation.key}-${reservation.status}-${reservation.comment}`} reservation={reservation} busy={saving === reservation.key} onSave={save} />)}</div>}
       </section>
     </>}

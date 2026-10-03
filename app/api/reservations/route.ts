@@ -4,9 +4,33 @@ import { sameOrigin } from '../../../lib/admin-auth';
 
 export const runtime = 'nodejs';
 const attempts = new Map<string, number[]>();
+const sheetsWebhook = 'https://script.google.com/macros/s/AKfycbyIyOWq3t4XFYFjZJGpEYJpYvfOmriYIP8-PIAORzf2KBtWChSr1RT1rMqi4TQSJRuY/exec';
 
 function todayInFoix() {
   return new Intl.DateTimeFormat('sv-SE', { timeZone:'Europe/Paris', year:'numeric', month:'2-digit', day:'2-digit' }).format(new Date());
+}
+
+function reservationsToken() {
+  return process.env.NOMADE_RESERVATIONS_TOKEN?.trim() ?? '';
+}
+
+async function closedDates() {
+  const token = reservationsToken();
+  if (!token) throw new Error('Reservations token is not configured');
+  const url = new URL(sheetsWebhook);
+  url.searchParams.set('token', token);
+  url.searchParams.set('action', 'getClosures');
+  const response = await fetch(url, { cache:'no-store', signal:AbortSignal.timeout(8000) });
+  const body = await response.json().catch(() => null);
+  if (!response.ok || !body?.ok || !Array.isArray(body.closedDates)) throw new Error('Availability service failed');
+  return body.closedDates
+    .map((item:unknown) => typeof item === 'string' ? item : item && typeof item === 'object' && 'date' in item ? item.date : '')
+    .filter((date:unknown):date is string => typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date));
+}
+
+export async function GET() {
+  try { return NextResponse.json({ closedDates:await closedDates() }, { headers:{'Cache-Control':'no-store'} }); }
+  catch { return NextResponse.json({ error:'Availability is temporarily unavailable' }, { status:503 }); }
 }
 
 export async function POST(request: NextRequest) {
@@ -28,6 +52,13 @@ export async function POST(request: NextRequest) {
       typeof time !== 'string' || !/^([01]\d|2[0-3]):[0-5]\d$/.test(time) ||
       !Number.isInteger(guests) || guests < 1 || guests > 50) {
     return NextResponse.json({ error:'Please check the reservation details' }, { status:400 });
+  }
+  try {
+    if ((await closedDates()).includes(date)) {
+      return NextResponse.json({ code:'RESTAURANT_CLOSED', error:'The restaurant is closed on this date' }, { status:409 });
+    }
+  } catch {
+    return NextResponse.json({ error:'Availability is temporarily unavailable. Please call the restaurant.' }, { status:503 });
   }
   const host = process.env.NOMADE_SMTP_HOST || 'smtp.gmail.com';
   const port = Number(process.env.NOMADE_SMTP_PORT || 465);
@@ -56,7 +87,6 @@ export async function POST(request: NextRequest) {
 
     // Mirror each valid reservation request to the NOMADE reservations sheet.
     // Email remains authoritative: a temporary Sheets failure must not lose the request.
-    const sheetsWebhook = 'https://script.google.com/macros/s/AKfycbyIyOWq3t4XFYFjZJGpEYJpYvfOmriYIP8-PIAORzf2KBtWChSr1RT1rMqi4TQSJRuY/exec';
     try {
       const sheetsResponse = await fetch(sheetsWebhook, {
         method:'POST',

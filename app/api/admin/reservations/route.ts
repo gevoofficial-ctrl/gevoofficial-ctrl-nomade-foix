@@ -63,6 +63,32 @@ export async function POST(request: NextRequest) {
   const raw = await request.text().catch(() => '');
   if (raw.length > 8192) return json({ error:'Requête trop volumineuse' }, { status:413 });
   const body = (() => { try { return JSON.parse(raw); } catch { return null; } })();
+  if (body?.action === 'setClosure') {
+    const date = typeof body.date === 'string' ? body.date : '';
+    const closed = body.closed;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || Number.isNaN(Date.parse(date)) ||
+        new Date(date).toISOString().slice(0, 10) !== date || typeof closed !== 'boolean') {
+      return json({ error:'Date de fermeture non valide' }, { status:400 });
+    }
+    try {
+      const url = new URL(webhook);
+      url.searchParams.set('token', serverToken);
+      url.searchParams.set('action', 'setClosure');
+      const response = await fetch(url, {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({ token:serverToken, action:'setClosure', date, closed }),
+        cache:'no-store', signal:AbortSignal.timeout(12000),
+      });
+      const result = await readUpstream(response);
+      if (!response.ok || !result || typeof result !== 'object' || ('ok' in result && result.ok === false)) {
+        return json({ error:'La fermeture n’a pas été enregistrée' }, { status:502 });
+      }
+      return json(result);
+    } catch {
+      console.error('Reservations closure update failed');
+      return json({ error:'Impossible de mettre à jour la fermeture' }, { status:502 });
+    }
+  }
   const status = typeof body?.status === 'string' ? body.status : '';
   const comment = typeof body?.comment === 'string' ? body.comment.trim() : '';
   const id = typeof body?.id === 'string' || typeof body?.id === 'number' ? body.id : undefined;
