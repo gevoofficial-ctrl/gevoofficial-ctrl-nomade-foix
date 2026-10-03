@@ -120,6 +120,29 @@ function monthLabel(year:number, month:number) {
 
 function receivedLabel(value:string) {
   if (!value) return 'Heure de réception non disponible';
+
+  const french = value.trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:[ T](\d{1,2}):(\d{2})(?::(\d{2}))?)?$/);
+  if (french) {
+    const [, dayText, monthText, yearText, hourText = '0', minuteText = '0', secondText = '0'] = french;
+    const day = Number(dayText);
+    const month = Number(monthText);
+    const year = Number(yearText);
+    const hour = Number(hourText);
+    const minute = Number(minuteText);
+    const second = Number(secondText);
+    const parsed = new Date(Date.UTC(year, month - 1, day, hour, minute, second));
+    const valid = parsed.getUTCFullYear() === year
+      && parsed.getUTCMonth() === month - 1
+      && parsed.getUTCDate() === day
+      && parsed.getUTCHours() === hour
+      && parsed.getUTCMinutes() === minute
+      && parsed.getUTCSeconds() === second;
+    if (!valid) return value;
+    return new Intl.DateTimeFormat('fr-FR', {
+      timeZone:'UTC', dateStyle:'medium', timeStyle:'short',
+    }).format(parsed);
+  }
+
   const parsed = new Date(value);
   if (Number.isNaN(parsed.getTime())) return value;
   return new Intl.DateTimeFormat('fr-FR', {
