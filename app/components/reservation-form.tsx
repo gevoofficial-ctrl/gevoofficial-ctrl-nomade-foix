@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import type { Lang } from '../../lib/menu';
+import { reservationTimeSlots } from '../../lib/reservation-times';
 
 const copy = {
   fr: { title:'Votre table chez NOMADE', intro:'Envoyez votre demande. Notre équipe vous contactera pour confirmer la disponibilité.', name:'Nom', phone:'Téléphone', date:'Date', time:'Heure', guests:'Nombre de personnes', send:'Envoyer la demande', sending:'Envoi…', success:'Votre demande a été envoyée. La réservation sera confirmée par notre équipe.', error:'Impossible d’envoyer la demande. Appelez-nous au 07 45 26 28 23.', pastDate:'Choisissez une date à partir d’aujourd’hui.', closed:'Le restaurant est fermé ce jour. Choisissez une autre date.', privacy:'Vos coordonnées servent uniquement à répondre à votre demande.', policy:'Confidentialité', chooseDate:'Choisir une date', chooseTime:'Choisir une heure', weekdays:['Lu','Ma','Me','Je','Ve','Sa','Di'] },
@@ -73,8 +74,6 @@ export default function ReservationForm({lang}: {lang:Lang}) {
   };
   const dateLabel = date ? new Intl.DateTimeFormat(locale[lang],{day:'2-digit',month:'long',year:'numeric'}).format(parseIso(date)) : t.chooseDate;
   const monthLabel = new Intl.DateTimeFormat(locale[lang],{month:'long',year:'numeric'}).format(new Date(view.year,view.month,1));
-  const slots = Array.from({length:48},(_,i)=>`${String(Math.floor(i/2)).padStart(2,'0')}:${i%2?'30':'00'}`);
-
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (busy) return;
@@ -122,7 +121,7 @@ export default function ReservationForm({lang}: {lang:Lang}) {
         <label className="pickerField">{t.time}
           <input name="time" type="hidden" value={time} required readOnly />
           <button type="button" className={`pickerTrigger ${time?'hasValue':''}`} aria-haspopup="listbox" aria-expanded={timeOpen} onClick={()=>{setTimeOpen(v=>!v);setDateOpen(false)}}>{time || t.chooseTime}<span aria-hidden="true">⌄</span></button>
-          {timeOpen && <div className="timePicker pickerPopover" role="listbox" aria-label={t.chooseTime}>{slots.map(slot=><button key={slot} type="button" role="option" aria-selected={slot===time} className={slot===time?'selected':''} onClick={()=>{setTime(slot);setTimeOpen(false)}}>{slot}</button>)}</div>}
+          {timeOpen && <div className="timePicker pickerPopover" role="listbox" aria-label={t.chooseTime}>{reservationTimeSlots.map(slot=><button key={slot} type="button" role="option" aria-selected={slot===time} className={slot===time?'selected':''} onClick={()=>{setTime(slot);setTimeOpen(false)}}>{slot}</button>)}</div>}
         </label>
         <label>{t.guests}<input name="guests" type="number" min="1" max="50" defaultValue="2" required /></label>
       </div>

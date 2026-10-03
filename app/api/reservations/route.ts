@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 import { sameOrigin } from '../../../lib/admin-auth';
+import { isReservationTime } from '../../../lib/reservation-times';
 
 export const runtime = 'nodejs';
 const attempts = new Map<string, number[]>();
@@ -49,7 +50,7 @@ export async function POST(request: NextRequest) {
     !Number.isNaN(Date.parse(date)) && new Date(date).toISOString().slice(0,10) === date && date >= todayInFoix();
   if (name.length < 2 || name.length > 100 || /[\r\n]/.test(name) ||
       !/^[+0-9 ().-]{6,25}$/.test(phone) || !validDate ||
-      typeof time !== 'string' || !/^([01]\d|2[0-3]):[0-5]\d$/.test(time) ||
+      !isReservationTime(time) ||
       !Number.isInteger(guests) || guests < 1 || guests > 50) {
     return NextResponse.json({ error:'Please check the reservation details' }, { status:400 });
   }
