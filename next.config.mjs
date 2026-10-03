@@ -7,6 +7,16 @@ const nextConfig = {
       { source: '/lesmenu/', destination: '/fr/carte', permanent: true },
       { source: '/mentions-legales', destination: '/fr/mentions-legales', permanent: true },
       { source: '/mentions-legales/', destination: '/fr/mentions-legales', permanent: true },
+      { source: '/politique-de-confidentialite', destination: '/fr/confidentialite', permanent: true },
+      { source: '/politique-de-confidentialite/', destination: '/fr/confidentialite', permanent: true },
+      { source: '/allergenes', destination: '/fr/allergenes', permanent: true },
+      { source: '/allergenes/', destination: '/fr/allergenes', permanent: true },
+      { source: '/menu', destination: '/fr/carte', permanent: true },
+      { source: '/menu/', destination: '/fr/carte', permanent: true },
+      { source: '/carte', destination: '/fr/carte', permanent: true },
+      { source: '/carte/', destination: '/fr/carte', permanent: true },
+      { source: '/reservation', destination: '/fr#reservation', permanent: true },
+      { source: '/reservation/', destination: '/fr#reservation', permanent: true },
     ];
   },
   async headers() {
@@ -20,6 +30,24 @@ const nextConfig = {
           { key: 'Strict-Transport-Security', value: 'max-age=31536000; includeSubDomains' },
           { key: 'X-Content-Type-Options', value: 'nosniff' },
           { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+        ],
+      },
+      {
+        source: '/video/:path*',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=86400, stale-while-revalidate=604800' },
+        ],
+      },
+      {
+        source: '/images/:path*',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=86400, stale-while-revalidate=604800' },
+        ],
+      },
+      {
+        source: '/nomade-logo-light.svg',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=86400, stale-while-revalidate=604800' },
         ],
       },
     ];

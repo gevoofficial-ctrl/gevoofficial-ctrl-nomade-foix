@@ -29,6 +29,7 @@ const restaurantStructuredData = {
   logo: `${siteUrl}/nomade-logo-light.svg`,
   telephone: '+33745262823',
   email: 'nomaderestaubar@gmail.com',
+  acceptsReservations: true,
   hasMenu: `${siteUrl}/fr/carte`,
   servesCuisine: ['Cuisine bistronomique', 'Cuisine au feu de bois', 'Cuisine locavore', 'Cuisine aux influences internationales'],
   address: {
@@ -48,7 +49,11 @@ const restaurantStructuredData = {
     '@type': 'City',
     name: 'Foix',
   },
-  sameAs: ['https://www.instagram.com/nomadefoix/'],
+  sameAs: [
+    'https://www.instagram.com/nomadefoix/',
+    'https://www.foix-tourisme.com/restaurant/le-nomade/',
+    'https://www.tripadvisor.fr/Restaurant_Review-g226879-d34250123-Reviews-Nomade_Bar_Restaurant-Foix_Ariege_Occitanie.html',
+  ],
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
@@ -67,7 +72,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         {/* eslint-disable-next-line @next/next/no-css-tags */}
         <link rel="stylesheet" href="/api/nomade-css?v=15" />
         <meta name="msvalidate.01" content="6765DEE9694A7BEA83306F67874B81D8" />
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(restaurantStructuredData) }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(restaurantStructuredData).replace(/</g, '\\u003c') }} />
       </head>
       <body><GoogleAnalytics />{children}</body>
     </html>

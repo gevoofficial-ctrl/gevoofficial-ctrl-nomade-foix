@@ -10,6 +10,12 @@ const locales: Record<SiteLanguage, string> = {
   es: 'es_ES',
 };
 
+const socialImageAlt: Record<SiteLanguage, string> = {
+  fr: 'NOMADE — restaurant et bar à Foix',
+  en: 'NOMADE — restaurant and bar in Foix',
+  es: 'NOMADE — restaurante y bar en Foix',
+};
+
 export function isSiteLanguage(value: string): value is SiteLanguage {
   return (languages as readonly string[]).includes(value);
 }
@@ -51,7 +57,7 @@ export function pageMetadata(
       alternateLocale: languages.filter((language) => language !== lang).map((language) => locales[language]),
       title,
       description,
-      images: [{ url: '/video/nomade-hero-poster.jpg', width: 1600, height: 899, alt: 'NOMADE — Restaurant · Bar · Foix' }],
+      images: [{ url: '/video/nomade-hero-poster.jpg', width: 1600, height: 899, alt: socialImageAlt[lang] }],
     },
     twitter: {
       card: 'summary_large_image',

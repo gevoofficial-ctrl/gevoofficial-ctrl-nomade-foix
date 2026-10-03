@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { localized, readMenu, sortedMenu, type Lang } from '../../../lib/menu';
-import { isSiteLanguage, pageMetadata } from '../../../lib/seo';
+import { isSiteLanguage, pageMetadata, siteUrl } from '../../../lib/seo';
 
 const labels = {
   fr: { title:'La carte', description:'Découvrez la carte de NOMADE, restaurant et bar à Foix.', back:'Retour à l’accueil', unavailable:'Indisponible', composition:'Composition' },
@@ -29,7 +29,30 @@ export default async function Carte({params}: {params: Promise<{lang:string}>}) 
   const lang = input as Lang, t = labels[lang];
   const items = sortedMenu(await readMenu());
   const categories = [...new Set(items.map(d => d.category))];
+  const menuSections = categories.map(category => ({
+    '@type': 'MenuSection',
+    name: categoryLabels[lang][category] ?? category,
+    hasMenuItem: items.filter(dish => dish.category === category && dish.available).map(dish => {
+      const content = localized(dish, lang);
+      return {
+        '@type': 'MenuItem',
+        '@id': `${siteUrl}/${lang}/carte#dish-${dish.id}`,
+        name: content.name,
+        ...(content.description ? { description: content.description } : {}),
+      };
+    }),
+  })).filter(section => section.hasMenuItem.length > 0);
+  const menuStructuredData = {
+    '@context': 'https://schema.org',
+    '@type': 'Menu',
+    '@id': `${siteUrl}/${lang}/carte#menu`,
+    name: `${t.title} — NOMADE`,
+    url: `${siteUrl}/${lang}/carte`,
+    inLanguage: lang,
+    hasMenuSection: menuSections,
+  };
   return <main className="legalPage menuPage" lang={lang}>
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(menuStructuredData).replace(/</g, '\\u003c') }} />
     <Link className="textLink" href={`/${lang}`}>← {t.back}</Link>
     <div className="legalHead"><p className="eyebrow">NOMADE · FOIX</p><h1>{t.title}</h1></div>
     <nav className="menuLanguageSwitcher" aria-label="Menu language">{(['fr', 'en', 'es'] as const).map(language => <Link key={language} className={language === lang ? 'active' : ''} href={`/${language}/carte`} aria-current={language === lang ? 'page' : undefined}>{language.toUpperCase()}</Link>)}</nav>

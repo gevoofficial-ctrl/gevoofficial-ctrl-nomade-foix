@@ -9,7 +9,7 @@ const legal = {
   legalForm: 'SAS',
   capital: '1 000 €',
   address: '42 Rue des Chapeliers, 09000 Foix, France',
-  rcs: '943 332 155 00010',
+  rcs: 'SIRET 943 332 155 00010 · RCS Foix 943 332 155',
   vat: 'FR40 943 332 155',
   publisherName: 'CHLOIAN KAMO',
   phone: '07 45 26 28 23',

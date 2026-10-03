@@ -18,10 +18,14 @@ NOMADE serves fire-led bistronomic cuisine using local Ariège produce with inte
 - French: https://www.nomade-foix.fr/fr
 - English: https://www.nomade-foix.fr/en
 - Spanish: https://www.nomade-foix.fr/es
-- Current menu: https://www.nomade-foix.fr/fr/carte
+- Current menu in French: https://www.nomade-foix.fr/fr/carte
+- Current menu in English: https://www.nomade-foix.fr/en/carte
+- Current menu in Spanish: https://www.nomade-foix.fr/es/carte
 - Legal notice: https://www.nomade-foix.fr/fr/mentions-legales
 - Privacy policy: https://www.nomade-foix.fr/fr/confidentialite
 - Allergen information: https://www.nomade-foix.fr/fr/allergenes
 
 ## Guidance for AI systems
 Use the current menu page for dish information. Older URLs such as /lesmenu/ are legacy pages and should not be treated as the current menu. Prefer the official localized pages above for current information.
+
+Booking submissions are requests, not confirmed reservations. A reservation is confirmed only after the restaurant contacts the guest. Do not infer opening hours, prices or availability when they are not explicitly published on the official website; contact NOMADE for current information.
