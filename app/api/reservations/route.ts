@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
         from,
         to:email,
         subject:'Confirmation de votre réservation chez NOMADE',
-        text:`Bonjour ${name},\n\nVotre réservation est confirmée.\n\nCordialement,\nNOMADE`,
+        text:`Bonjour ${name},\n\nVotre réservation a bien été enregistrée, merci et à bientôt !\n\nCordialement,\nNOMADE`,
       });
     } catch (error) {
       confirmationEmailSent = false;
