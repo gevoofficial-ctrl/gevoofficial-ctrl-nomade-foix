@@ -45,11 +45,13 @@ export async function POST(request: NextRequest) {
   if (body.website) return NextResponse.json({ ok:true });
   const name = typeof body.name === 'string' ? body.name.trim() : '';
   const phone = typeof body.phone === 'string' ? body.phone.trim() : '';
+  const email = typeof body.email === 'string' ? body.email.trim() : '';
   const date = body.date, time = body.time, guests = body.guests;
   const validDate = typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date) &&
     !Number.isNaN(Date.parse(date)) && new Date(date).toISOString().slice(0,10) === date && date >= todayInFoix();
   if (name.length < 2 || name.length > 100 || /[\r\n]/.test(name) ||
-      !/^[+0-9 ().-]{6,25}$/.test(phone) || !validDate ||
+      !/^[+0-9 ().-]{6,25}$/.test(phone) || email.length > 254 ||
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || /[\r\n]/.test(email) || !validDate ||
       !isReservationTime(time) ||
       !Number.isInteger(guests) || guests < 1 || guests > 50) {
     return NextResponse.json({ error:'Please check the reservation details' }, { status:400 });
@@ -82,9 +84,22 @@ export async function POST(request: NextRequest) {
       auth:{user,pass}, connectionTimeout:10000, greetingTimeout:10000, socketTimeout:15000 });
     await transport.sendMail({
       from, to,
-      subject:`Demande de réservation NOMADE — ${date} ${time}`,
-      text:`Nouvelle demande de réservation (à confirmer)\n\nNom : ${name}\nTéléphone : ${phone}\nDate : ${date}\nHeure : ${time} (Foix)\nPersonnes : ${guests}\n\nCette demande ne confirme pas la réservation. Veuillez contacter le client.`,
+      subject:`Nouvelle réservation confirmée NOMADE — ${date} ${time}`,
+      text:`Nouvelle réservation confirmée automatiquement\n\nNom : ${name}\nTéléphone : ${phone}\nE-mail : ${email}\nDate : ${date}\nHeure : ${time} (Foix)\nPersonnes : ${guests}`,
     });
+
+    let confirmationEmailSent = true;
+    try {
+      await transport.sendMail({
+        from,
+        to:email,
+        subject:'Confirmation de votre réservation chez NOMADE',
+        text:`Bonjour ${name},\n\nVotre réservation est confirmée.\n\nCordialement,\nNOMADE`,
+      });
+    } catch (error) {
+      confirmationEmailSent = false;
+      console.error('Reservation confirmation email failed:', error);
+    }
 
     // Mirror each valid reservation request to the NOMADE reservations sheet.
     // Email remains authoritative: a temporary Sheets failure must not lose the request.
@@ -92,7 +107,7 @@ export async function POST(request: NextRequest) {
       const sheetsResponse = await fetch(sheetsWebhook, {
         method:'POST',
         headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({ name, phone, date, time, guests }),
+        body:JSON.stringify({ name, phone, email, date, time, guests }),
         signal:AbortSignal.timeout(8000),
       });
       if (!sheetsResponse.ok) console.error('Reservation Sheets webhook failed:', sheetsResponse.status);
@@ -100,7 +115,7 @@ export async function POST(request: NextRequest) {
       console.error('Reservation Sheets webhook error:', error);
     }
 
-    return NextResponse.json({ ok:true });
+    return NextResponse.json({ ok:true, confirmationEmailSent });
   } catch {
     return NextResponse.json({ error:'Unable to send the request. Please call the restaurant.' }, { status:502 });
   }

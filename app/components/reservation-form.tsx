@@ -6,9 +6,9 @@ import type { Lang } from '../../lib/menu';
 import { reservationTimeSlots } from '../../lib/reservation-times';
 
 const copy = {
-  fr: { title:'Votre table chez NOMADE', intro:'Envoyez votre demande. Notre équipe vous contactera pour confirmer la disponibilité.', name:'Nom', phone:'Téléphone', date:'Date', time:'Heure', guests:'Nombre de personnes', send:'Envoyer la demande', sending:'Envoi…', success:'Votre demande de réservation a bien été prise en compte par notre système. Un administrateur vous contactera pour confirmer votre réservation.', error:'Impossible d’envoyer la demande. Appelez-nous au 07 45 26 28 23.', pastDate:'Choisissez une date à partir d’aujourd’hui.', closed:'Le restaurant est fermé ce jour. Choisissez une autre date.', privacy:'Vos coordonnées servent uniquement à répondre à votre demande.', policy:'Confidentialité', chooseDate:'Choisir une date', chooseTime:'Choisir une heure', weekdays:['Lu','Ma','Me','Je','Ve','Sa','Di'] },
-  en: { title:'Your table at NOMADE', intro:'Send a request. Our team will contact you to confirm availability.', name:'Name', phone:'Phone number', date:'Date', time:'Time', guests:'Number of guests', send:'Send request', sending:'Sending…', success:'Your reservation request has been received by our system. An administrator will contact you to confirm your booking.', error:'Unable to send your request. Call us on +33 7 45 26 28 23.', pastDate:'Choose today or a future date.', closed:'The restaurant is closed on this date. Please choose another day.', privacy:'We use your contact details only to respond to your request.', policy:'Privacy policy', chooseDate:'Choose a date', chooseTime:'Choose a time', weekdays:['Mo','Tu','We','Th','Fr','Sa','Su'] },
-  es: { title:'Tu mesa en NOMADE', intro:'Envía una solicitud. Nuestro equipo te contactará para confirmar la disponibilidad.', name:'Nombre', phone:'Teléfono', date:'Fecha', time:'Hora', guests:'Número de personas', send:'Enviar solicitud', sending:'Enviando…', success:'Tu solicitud de reserva ha sido recibida por nuestro sistema. Un administrador se pondrá en contacto contigo para confirmar la reserva.', error:'No se pudo enviar la solicitud. Llámanos al +33 7 45 26 28 23.', pastDate:'Elige la fecha de hoy o una fecha posterior.', closed:'El restaurante está cerrado ese día. Elige otra fecha.', privacy:'Usamos tus datos de contacto solo para responder a tu solicitud.', policy:'Privacidad', chooseDate:'Elegir fecha', chooseTime:'Elegir hora', weekdays:['Lu','Ma','Mi','Ju','Vi','Sá','Do'] },
+  fr: { title:'Votre table chez NOMADE', intro:'Réservez votre table. Une confirmation vous sera adressée par e-mail.', name:'Nom', phone:'Téléphone', email:'E-mail', date:'Date', time:'Heure', guests:'Nombre de personnes', send:'Confirmer la réservation', sending:'Envoi…', success:'Votre réservation est confirmée. Un e-mail de confirmation vient de vous être envoyé.', emailWarning:'Votre réservation est confirmée, mais l’e-mail de confirmation n’a pas pu être envoyé. Appelez-nous au 07 45 26 28 23 si nécessaire.', error:'Impossible d’envoyer la réservation. Appelez-nous au 07 45 26 28 23.', pastDate:'Choisissez une date à partir d’aujourd’hui.', closed:'Le restaurant est fermé ce jour. Choisissez une autre date.', privacy:'Vos coordonnées servent uniquement à gérer votre réservation.', policy:'Confidentialité', chooseDate:'Choisir une date', chooseTime:'Choisir une heure', weekdays:['Lu','Ma','Me','Je','Ve','Sa','Di'] },
+  en: { title:'Your table at NOMADE', intro:'Book your table. A confirmation will be sent to you by email.', name:'Name', phone:'Phone number', email:'Email', date:'Date', time:'Time', guests:'Number of guests', send:'Confirm booking', sending:'Sending…', success:'Your booking is confirmed. A confirmation email has been sent to you.', emailWarning:'Your booking is confirmed, but the confirmation email could not be sent. Call us on +33 7 45 26 28 23 if needed.', error:'Unable to send your booking. Call us on +33 7 45 26 28 23.', pastDate:'Choose today or a future date.', closed:'The restaurant is closed on this date. Please choose another day.', privacy:'We use your contact details only to manage your booking.', policy:'Privacy policy', chooseDate:'Choose a date', chooseTime:'Choose a time', weekdays:['Mo','Tu','We','Th','Fr','Sa','Su'] },
+  es: { title:'Tu mesa en NOMADE', intro:'Reserva tu mesa. Recibirás una confirmación por correo electrónico.', name:'Nombre', phone:'Teléfono', email:'Correo electrónico', date:'Fecha', time:'Hora', guests:'Número de personas', send:'Confirmar reserva', sending:'Enviando…', success:'Tu reserva está confirmada. Te hemos enviado un correo electrónico de confirmación.', emailWarning:'Tu reserva está confirmada, pero no se pudo enviar el correo de confirmación. Llámanos al +33 7 45 26 28 23 si lo necesitas.', error:'No se pudo enviar la reserva. Llámanos al +33 7 45 26 28 23.', pastDate:'Elige la fecha de hoy o una fecha posterior.', closed:'El restaurante está cerrado ese día. Elige otra fecha.', privacy:'Usamos tus datos de contacto solo para gestionar tu reserva.', policy:'Privacidad', chooseDate:'Elegir fecha', chooseTime:'Elegir hora', weekdays:['Lu','Ma','Mi','Ju','Vi','Sá','Do'] },
 };
 
 const locale = { fr:'fr-FR', en:'en-GB', es:'es-ES' } as const;
@@ -35,7 +35,7 @@ export default function ReservationForm({lang}: {lang:Lang}) {
   const minimumDate = todayInFoix();
   const initial = parseIso(minimumDate);
   const [busy,setBusy] = useState(false);
-  const [status,setStatus] = useState<'idle'|'sent'|'error'|'pastDate'|'closed'>('idle');
+  const [status,setStatus] = useState<'idle'|'sent'|'sentNoEmail'|'error'|'pastDate'|'closed'>('idle');
   const [closedDates,setClosedDates] = useState<string[]>([]);
   const [date,setDate] = useState('');
   const [time,setTime] = useState('');
@@ -85,7 +85,7 @@ export default function ReservationForm({lang}: {lang:Lang}) {
     setBusy(true); setStatus('idle');
     try {
       const response = await fetch('/api/reservations',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
-        name:fields.get('name'), phone:fields.get('phone'), date:selectedDate, time:fields.get('time'),
+        name:fields.get('name'), phone:fields.get('phone'), email:fields.get('email'), date:selectedDate, time:fields.get('time'),
         guests:Number(fields.get('guests')), website:fields.get('website'),
       })});
       const body = await response.json().catch(() => ({}));
@@ -93,7 +93,7 @@ export default function ReservationForm({lang}: {lang:Lang}) {
         if (body?.code === 'RESTAURANT_CLOSED') { setStatus('closed'); return; }
         throw new Error('Send failed');
       }
-      setStatus('sent'); form.reset(); setDate(''); setTime('');
+      setStatus(body?.confirmationEmailSent === false ? 'sentNoEmail' : 'sent'); form.reset(); setDate(''); setTime('');
     } catch { setStatus('error'); }
     finally { setBusy(false); }
   }
@@ -104,6 +104,7 @@ export default function ReservationForm({lang}: {lang:Lang}) {
       <div className="reservationFields" ref={pickerRef}>
         <label>{t.name}<input name="name" type="text" autoComplete="name" minLength={2} maxLength={100} required /></label>
         <label>{t.phone}<input name="phone" type="tel" autoComplete="tel" minLength={6} maxLength={25} required /></label>
+        <label className="emailField">{t.email}<input name="email" type="email" autoComplete="email" maxLength={254} required /></label>
         <label className="pickerField">{t.date}
           <input name="date" type="hidden" value={date} required readOnly />
           <button type="button" className={`pickerTrigger ${date?'hasValue':''}`} aria-haspopup="dialog" aria-expanded={dateOpen} onClick={()=>{setDateOpen(v=>!v);setTimeOpen(false)}}>{dateLabel}<span aria-hidden="true">⌄</span></button>
@@ -128,6 +129,7 @@ export default function ReservationForm({lang}: {lang:Lang}) {
       <div className="reservationTrap" aria-hidden="true"><label>Website<input name="website" tabIndex={-1} autoComplete="off" /></label></div>
       <button className="button" disabled={busy || !date || !time} type="submit">{busy?t.sending:t.send}</button>
       {status==='sent' && <p className="reservationStatus" role="status">{t.success}</p>}
+      {status==='sentNoEmail' && <p className="reservationStatus" role="alert">{t.emailWarning}</p>}
       {status==='pastDate' && <p className="reservationStatus" role="alert">{t.pastDate}</p>}
       {status==='closed' && <p className="reservationStatus" role="alert">{t.closed}</p>}
       {status==='error' && <p className="reservationStatus" role="alert">{t.error} <a href="tel:+33745262823">07 45 26 28 23</a></p>}
