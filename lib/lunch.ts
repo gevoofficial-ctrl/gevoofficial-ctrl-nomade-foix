@@ -19,11 +19,11 @@ export function allowedDate(value:unknown, now = new Date()): value is string {
   const french = frenchNow(now);
   return value > french.date || (value === french.date && french.minutes >= 570 && french.minutes <= 690);
 }
-export function nextPickupDate(now = new Date()) {
+export function nextPickupDate(now = new Date(), closedDates:readonly string[] = []) {
   const french = frenchNow(now);
   const date = new Date(`${french.date}T12:00:00Z`);
   if (french.minutes > 690) date.setUTCDate(date.getUTCDate() + 1);
-  while (!isWeekday(date.toISOString().slice(0,10))) date.setUTCDate(date.getUTCDate() + 1);
+  while (!isWeekday(date.toISOString().slice(0,10)) || closedDates.includes(date.toISOString().slice(0,10))) date.setUTCDate(date.getUTCDate() + 1);
   return date.toISOString().slice(0,10);
 }
 export function lunchKind(dish: Pick<Dish,'category'>): 'main'|'drink'|null {

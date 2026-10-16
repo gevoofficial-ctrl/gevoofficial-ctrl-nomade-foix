@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { mailConfiguration, mailTransport } from '../../../lib/mail';
 import { sameOrigin } from '../../../lib/admin-auth';
 import { isReservationTime } from '../../../lib/reservation-times';
+import { reservationClosedDates } from '../../../lib/reservation-availability';
 
 export const runtime = 'nodejs';
 const attempts = new Map<string, number[]>();
@@ -11,26 +12,8 @@ function todayInFoix() {
   return new Intl.DateTimeFormat('sv-SE', { timeZone:'Europe/Paris', year:'numeric', month:'2-digit', day:'2-digit' }).format(new Date());
 }
 
-function reservationsToken() {
-  return process.env.NOMADE_RESERVATIONS_TOKEN?.trim() ?? '';
-}
-
-async function closedDates() {
-  const token = reservationsToken();
-  if (!token) throw new Error('Reservations token is not configured');
-  const url = new URL(sheetsWebhook);
-  url.searchParams.set('token', token);
-  url.searchParams.set('action', 'getClosures');
-  const response = await fetch(url, { cache:'no-store', signal:AbortSignal.timeout(8000) });
-  const body = await response.json().catch(() => null);
-  if (!response.ok || !body?.ok || !Array.isArray(body.closedDates)) throw new Error('Availability service failed');
-  return body.closedDates
-    .map((item:unknown) => typeof item === 'string' ? item : item && typeof item === 'object' && 'date' in item ? item.date : '')
-    .filter((date:unknown):date is string => typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date));
-}
-
 export async function GET() {
-  try { return NextResponse.json({ closedDates:await closedDates() }, { headers:{'Cache-Control':'no-store'} }); }
+  try { return NextResponse.json({ closedDates:await reservationClosedDates() }, { headers:{'Cache-Control':'no-store'} }); }
   catch { return NextResponse.json({ error:'Availability is temporarily unavailable' }, { status:503 }); }
 }
 
@@ -57,7 +40,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error:'Please check the reservation details' }, { status:400 });
   }
   try {
-    if ((await closedDates()).includes(date)) {
+    if ((await reservationClosedDates()).includes(date)) {
       return NextResponse.json({ code:'RESTAURANT_CLOSED', error:'The restaurant is closed on this date' }, { status:409 });
     }
   } catch {

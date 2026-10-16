@@ -6,6 +6,7 @@ import { sameOrigin } from '../../../lib/admin-auth';
 import { menuFile, readMenu, sortedMenu, type Dish, type Lang, localized } from '../../../lib/menu';
 import { allowedDate, euros, lunchAvailable, lunchKind, lunchLinePrice, pickupSlots } from '../../../lib/lunch';
 import { mailConfiguration, mailTransport } from '../../../lib/mail';
+import { reservationClosedDates } from '../../../lib/reservation-availability';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -58,12 +59,15 @@ function confirmationHtml(name:string, orderNumber:string, date:string, time:str
 export async function GET(request:NextRequest) {
   const requestedLang=request.nextUrl.searchParams.get('lang');
   const lang:Lang=requestedLang==='en'||requestedLang==='es'?requestedLang:'fr';
-  const menu=sortedMenu(await readMenu()).filter(lunchAvailable);
+  let menu:Dish[], closedDates:string[];
+  try { [menu,closedDates]=await Promise.all([readMenu(),reservationClosedDates()]); }
+  catch { return NextResponse.json({error:'Availability is temporarily unavailable'},{status:503,headers:{'Cache-Control':'no-store'}}); }
+  menu=sortedMenu(menu).filter(lunchAvailable);
   const item=(dish:Dish)=>{
     const text=localized(dish,lang);
     return {id:dish.id,name:text.name,description:text.description,imageUrl:dish.imageUrl,regularPriceCents:dish.regularPriceCents,lunchPriceCents:dish.lunchPriceCents};
   };
-  return NextResponse.json({dishes:menu.filter(d=>lunchKind(d)==='main').map(item),drinks:menu.filter(d=>lunchKind(d)==='drink').map(item),pickupSlots},{headers:{'Cache-Control':'no-store'}});
+  return NextResponse.json({dishes:menu.filter(d=>lunchKind(d)==='main').map(item),drinks:menu.filter(d=>lunchKind(d)==='drink').map(item),pickupSlots,closedDates},{headers:{'Cache-Control':'no-store'}});
 }
 
 export async function POST(request:NextRequest) {
@@ -87,6 +91,9 @@ export async function POST(request:NextRequest) {
     const comment=body.comment===undefined?'':typeof body.comment==='string'?body.comment.replace(/\r\n?/g,'\n').trim():null;
     const date=body.date, time=body.time;
     if (name.length<2 || !/^[+0-9 ().-]{6,25}$/.test(phone) || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !allowedDate(date) || typeof time!=='string' || !pickupSlots.includes(time) || comment===null || comment.length>1000 || comment.includes('\u0000')) return NextResponse.json({error:'Veuillez vérifier les informations de commande.'},{status:400});
+    try {
+      if ((await reservationClosedDates()).includes(date)) return NextResponse.json({code:'RESTAURANT_CLOSED',error:'Le restaurant est fermé à cette date.'},{status:409});
+    } catch { return NextResponse.json({error:'La disponibilité est momentanément indisponible. Réessayez plus tard ou appelez-nous au 07 45 26 28 23.'},{status:503}); }
     const menu=new Map((await readMenu()).map(d=>[d.id,d]));
     const parseLines=(value:unknown,kind:'main'|'drink'):Line[]|null=>{
       if (!Array.isArray(value) || value.length>100) return null;
