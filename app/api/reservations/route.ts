@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import nodemailer from 'nodemailer';
+import { mailConfiguration, mailTransport } from '../../../lib/mail';
 import { sameOrigin } from '../../../lib/admin-auth';
 import { isReservationTime } from '../../../lib/reservation-times';
 
@@ -63,16 +63,9 @@ export async function POST(request: NextRequest) {
   } catch {
     return NextResponse.json({ error:'Availability is temporarily unavailable. Please call the restaurant.' }, { status:503 });
   }
-  const host = process.env.NOMADE_SMTP_HOST || 'smtp.gmail.com';
-  const port = Number(process.env.NOMADE_SMTP_PORT || 465);
-  const secure = process.env.NOMADE_SMTP_SECURE === 'true' || port === 465;
-  const user = process.env.NOMADE_SMTP_USER || 'nomaderestaubar@gmail.com';
-  const pass = process.env.NOMADE_SMTP_PASSWORD;
-  const from = process.env.NOMADE_SMTP_FROM || user;
-  const to = process.env.NOMADE_RESERVATIONS_TO || 'nomaderestaubar@gmail.com';
-  if (!host || !user || !pass || !from || !to || !Number.isInteger(port) || port < 1 || port > 65535) {
-    return NextResponse.json({ error:'Reservations are temporarily unavailable. Please call the restaurant.' }, { status:503 });
-  }
+  const config = mailConfiguration();
+  if (!config) return NextResponse.json({ error:'Reservations are temporarily unavailable. Please call the restaurant.' }, { status:503 });
+  const { from, to } = config;
   const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
   const now = Date.now();
   const recent = (attempts.get(ip) || []).filter(at => now-at < 15*60_000);
@@ -80,8 +73,7 @@ export async function POST(request: NextRequest) {
   attempts.set(ip, [...recent, now]);
   if (attempts.size > 2000) for (const [key, times] of attempts) if (times.every(at => now-at >= 15*60_000)) attempts.delete(key);
   try {
-    const transport = nodemailer.createTransport({ host, port, secure, requireTLS:!secure,
-      auth:{user,pass}, connectionTimeout:10000, greetingTimeout:10000, socketTimeout:15000 });
+    const transport = mailTransport(config);
     await transport.sendMail({
       from, to,
       subject:`Nouvelle réservation confirmée NOMADE — ${date} ${time}`,

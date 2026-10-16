@@ -12,7 +12,7 @@ const blank = (): Dish => ({
     en:{name:'',description:'',ingredients:''},
     es:{name:'',description:'',ingredients:''},
   },
-  imageUrl:'', available:true, signature:false, order:0,
+  imageUrl:'', available:true, signature:false, order:0, regularPriceCents:null, lunchIncluded:false, lunchPriceCents:null,
 });
 const request = async (url: string, options?: RequestInit) => {
   const response = await fetch(url, { ...options, cache:'no-store', headers:{'Content-Type':'application/json',...options?.headers} });
@@ -20,6 +20,11 @@ const request = async (url: string, options?: RequestInit) => {
   if (!response.ok) throw new Error(body.error || 'Request failed');
   return body;
 };
+
+function PriceInput({price,onPrice,required=false}:{price:number|null;onPrice:(value:string)=>void;required?:boolean}) {
+  const [value,setValue]=useState(price===null?'':(price/100).toFixed(2));
+  return <input type="text" inputMode="decimal" pattern="[0-9]+([.,][0-9]{1,2})?" value={value} required={required} onChange={e=>{setValue(e.target.value);onPrice(e.target.value);}} onBlur={()=>{const amount=Number(value.replace(',','.'));if(value&&Number.isFinite(amount))setValue(amount.toFixed(2));}}/>;
+}
 
 export default function AdminPanel() {
   const [status,setStatus] = useState<'loading'|'locked'|'ready'|'unconfigured'>('loading');
@@ -54,6 +59,10 @@ export default function AdminPanel() {
     catch(e) { setMessage((e as Error).message); } finally { setBusy(false); }
   }
   const set = (patch: Partial<Dish>) => setDraft(current => current && ({...current,...patch}));
+  const setPrice = (field: 'regularPriceCents'|'lunchPriceCents', value: string) => {
+    const normalized = value.replace(',', '.').trim();
+    set({ [field]: normalized === '' ? null : Math.round(Number(normalized) * 100) } as Partial<Dish>);
+  };
   const editFrench = (field: 'name'|'description'|'ingredients', value: string) =>
     setDraft(current => current && ({...current,translations:{...current.translations,fr:{...current.translations.fr,[field]:value}}}));
   async function upload(file: File) {
@@ -75,18 +84,19 @@ export default function AdminPanel() {
     {status === 'locked' && <form className="adminLogin" onSubmit={login}><h2>Connexion</h2><label>Mot de passe<input type="password" autoComplete="current-password" value={password} onChange={e=>setPassword(e.target.value)} required /></label><button disabled={busy}>Se connecter</button></form>}
     {status === 'ready' && <>
       <div className="adminToolbar"><p>{items.length} plat{items.length !== 1 && 's'}</p><Link href="/admin/reservations">Voir les réservations</Link><button onClick={()=>{setDraft(blank());setMessage('')}}>+ Ajouter un plat</button><a href="/fr/carte" target="_blank" rel="noreferrer">Voir la carte ↗</a></div>
-      <div className="adminList">{items.map(d => <article key={d.id}><div><strong>{d.translations.fr.name}</strong><small>{d.category} · {d.available?'Disponible':'Indisponible'} {d.signature && '· ★ Accueil'}</small></div><button onClick={()=>{setDraft(structuredClone(d));setMessage('')}}>Modifier</button></article>)}</div>
+      <div className="adminList">{items.map(d => <article key={d.id}><div><strong>{d.translations.fr.name}</strong><small>{d.category} · {d.available?'Disponible':'Indisponible'} {d.signature && '· ★ Accueil'} {d.lunchIncluded && `· Déjeuner ${((d.lunchPriceCents || 0)/100).toFixed(2)} €`}</small></div><button onClick={()=>{setDraft(structuredClone(d));setMessage('')}}>Modifier</button></article>)}</div>
       {draft && <form className="adminEditor" onSubmit={save}>
         <div className="adminEditorTop"><h2>{draft.id?'Modifier le plat':'Ajouter un plat'}</h2><button type="button" onClick={()=>setDraft(null)}>Fermer ×</button></div>
-        <p className="muted">La carte publique affiche le nom, la description et la composition. La photo sert uniquement aux plats mis en avant sur l’accueil.</p>
-        <div className="adminFields"><label>Catégorie<input value={draft.category} maxLength={80} onChange={e=>set({category:e.target.value})} required /></label><label>Ordre d’affichage<input type="number" value={draft.order} onChange={e=>set({order:Number(e.target.value)})} /></label></div>
+        <p className="muted">La carte publique affiche le nom, la description et la composition. La photo est utilisée sur l’accueil et dans Déjeuner à partager. Les prix normaux ne sont pas affichés sur la carte publique.</p>
+        <div className="adminFields"><label>Catégorie<input value={draft.category} maxLength={80} onChange={e=>set({category:e.target.value})} required /></label><label>Ordre d’affichage<input type="number" value={draft.order} onChange={e=>set({order:Number(e.target.value)})} /></label><label>Prix normal (€)<PriceInput key={`${draft.id}-regular`} price={draft.regularPriceCents} onPrice={value=>setPrice('regularPriceCents',value)} /></label></div>
         <fieldset><legend>FR · plat</legend>
           <label>Nom<input value={draft.translations.fr.name} onChange={e=>editFrench('name',e.target.value)} maxLength={120} required /></label>
           <label>Description<textarea value={draft.translations.fr.description} onChange={e=>editFrench('description',e.target.value)} maxLength={500} rows={2} /></label>
           <label>Composition<textarea value={draft.translations.fr.ingredients} onChange={e=>editFrench('ingredients',e.target.value)} maxLength={500} rows={2} /></label>
         </fieldset>
         <div className="adminChecks"><label><input type="checkbox" checked={draft.available} onChange={e=>set({available:e.target.checked})} />Disponible</label><label><input type="checkbox" checked={draft.signature} onChange={e=>set({signature:e.target.checked})} />★ Mettre en avant sur l’accueil</label></div>
-        {draft.signature && <label>Photo pour l’accueil (JPEG, PNG, WebP · 8 Mo)<input type="file" accept="image/jpeg,image/png,image/webp" onChange={e=>e.target.files?.[0] && upload(e.target.files[0])} /><input aria-label="URL de la photo" value={draft.imageUrl} onChange={e=>set({imageUrl:e.target.value})} placeholder="URL HTTPS ou photo téléchargée" /></label>}
+        <fieldset className="lunchEditor"><legend>Déjeuner à partager</legend><label className="adminInlineCheck"><input type="checkbox" checked={draft.lunchIncluded} onChange={e=>set({lunchIncluded:e.target.checked})} />Inclure dans le programme</label><label>Prix spécial (€)<PriceInput key={`${draft.id}-lunch`} price={draft.lunchPriceCents} required={draft.lunchIncluded} onPrice={value=>setPrice('lunchPriceCents',value)} /></label><p className="muted">Le prix normal est utilisé pour 1 à 4 plats et pour les boissons. À partir de 5 plats, le prix spécial est appliqué aux plats. Utilisez « Plats » pour les plats principaux et « Boissons » pour les boissons.</p></fieldset>
+        {<label>Photo (accueil ou Déjeuner · JPEG, PNG, WebP · 8 Mo)<input type="file" accept="image/jpeg,image/png,image/webp" onChange={e=>e.target.files?.[0] && upload(e.target.files[0])} /><input aria-label="URL de la photo" value={draft.imageUrl} onChange={e=>set({imageUrl:e.target.value})} placeholder="URL HTTPS ou photo téléchargée" /></label>}
         <div className="adminActions"><button disabled={busy} type="submit">{busy?'Enregistrement…':'Enregistrer'}</button>{draft.id && <button className="danger" type="button" disabled={busy} onClick={()=>remove(draft)}>Supprimer</button>}</div>
       </form>}
     </>}

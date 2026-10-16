@@ -22,7 +22,10 @@
     "imageUrl": "",
     "available": true,
     "signature": false,
-    "order": 10
+    "order": 10,
+    "regularPriceCents": null,
+    "lunchIncluded": false,
+    "lunchPriceCents": null
   },
   {
     "id": "00000000-0000-4000-8000-000000000002",
@@ -47,7 +50,10 @@
     "imageUrl": "",
     "available": true,
     "signature": false,
-    "order": 20
+    "order": 20,
+    "regularPriceCents": null,
+    "lunchIncluded": false,
+    "lunchPriceCents": null
   },
   {
     "id": "00000000-0000-4000-8000-000000000003",
@@ -72,7 +78,10 @@
     "imageUrl": "",
     "available": true,
     "signature": false,
-    "order": 30
+    "order": 30,
+    "regularPriceCents": null,
+    "lunchIncluded": false,
+    "lunchPriceCents": null
   },
   {
     "id": "00000000-0000-4000-8000-000000000004",
@@ -97,7 +106,10 @@
     "imageUrl": "",
     "available": true,
     "signature": false,
-    "order": 40
+    "order": 40,
+    "regularPriceCents": null,
+    "lunchIncluded": false,
+    "lunchPriceCents": null
   },
   {
     "id": "00000000-0000-4000-8000-000000000005",
@@ -122,7 +134,10 @@
     "imageUrl": "",
     "available": true,
     "signature": false,
-    "order": 50
+    "order": 50,
+    "regularPriceCents": null,
+    "lunchIncluded": false,
+    "lunchPriceCents": null
   },
   {
     "id": "00000000-0000-4000-8000-000000000006",
@@ -147,7 +162,10 @@
     "imageUrl": "",
     "available": true,
     "signature": false,
-    "order": 60
+    "order": 60,
+    "regularPriceCents": null,
+    "lunchIncluded": false,
+    "lunchPriceCents": null
   },
   {
     "id": "00000000-0000-4000-8000-000000000007",
@@ -172,7 +190,10 @@
     "imageUrl": "",
     "available": true,
     "signature": false,
-    "order": 70
+    "order": 70,
+    "regularPriceCents": null,
+    "lunchIncluded": false,
+    "lunchPriceCents": null
   },
   {
     "id": "00000000-0000-4000-8000-000000000008",
@@ -197,7 +218,10 @@
     "imageUrl": "",
     "available": true,
     "signature": false,
-    "order": 80
+    "order": 80,
+    "regularPriceCents": null,
+    "lunchIncluded": false,
+    "lunchPriceCents": null
   },
   {
     "id": "00000000-0000-4000-8000-000000000009",
@@ -222,7 +246,10 @@
     "imageUrl": "",
     "available": true,
     "signature": false,
-    "order": 90
+    "order": 90,
+    "regularPriceCents": null,
+    "lunchIncluded": false,
+    "lunchPriceCents": null
   },
   {
     "id": "00000000-0000-4000-8000-000000000010",
@@ -247,7 +274,10 @@
     "imageUrl": "",
     "available": true,
     "signature": false,
-    "order": 100
+    "order": 100,
+    "regularPriceCents": null,
+    "lunchIncluded": false,
+    "lunchPriceCents": null
   },
   {
     "id": "00000000-0000-4000-8000-000000000011",
@@ -272,7 +302,10 @@
     "imageUrl": "",
     "available": true,
     "signature": false,
-    "order": 110
+    "order": 110,
+    "regularPriceCents": null,
+    "lunchIncluded": false,
+    "lunchPriceCents": null
   },
   {
     "id": "00000000-0000-4000-8000-000000000012",
@@ -297,7 +330,10 @@
     "imageUrl": "",
     "available": true,
     "signature": false,
-    "order": 120
+    "order": 120,
+    "regularPriceCents": null,
+    "lunchIncluded": false,
+    "lunchPriceCents": null
   },
   {
     "id": "00000000-0000-4000-8000-000000000013",
@@ -322,7 +358,10 @@
     "imageUrl": "",
     "available": true,
     "signature": false,
-    "order": 130
+    "order": 130,
+    "regularPriceCents": null,
+    "lunchIncluded": false,
+    "lunchPriceCents": null
   },
   {
     "id": "00000000-0000-4000-8000-000000000014",
@@ -347,6 +386,233 @@
     "imageUrl": "",
     "available": true,
     "signature": false,
-    "order": 140
+    "order": 140,
+    "regularPriceCents": null,
+    "lunchIncluded": false,
+    "lunchPriceCents": null
+  },
+  {
+    "id": "11111111-1111-4111-8111-000000000001",
+    "category": "Plats",
+    "translations": {
+      "fr": {
+        "name": "TEST — Assiette Nomade 01",
+        "description": "Carte de démonstration à modifier dans l’administration. Photo d’illustration NOMADE.",
+        "ingredients": ""
+      },
+      "en": {
+        "name": "TEST — Assiette Nomade 01",
+        "description": "Demo item to edit in administration. NOMADE illustration photo.",
+        "ingredients": ""
+      },
+      "es": {
+        "name": "TEST — Assiette Nomade 01",
+        "description": "Ficha de demostración para editar en administración. Foto ilustrativa NOMADE.",
+        "ingredients": ""
+      }
+    },
+    "imageUrl": "/images/magret.jpg",
+    "available": true,
+    "signature": false,
+    "order": 200,
+    "regularPriceCents": null,
+    "lunchIncluded": true,
+    "lunchPriceCents": 1200
+  },
+  {
+    "id": "11111111-1111-4111-8111-000000000002",
+    "category": "Plats",
+    "translations": {
+      "fr": {
+        "name": "TEST — Assiette Nomade 02",
+        "description": "Carte de démonstration à modifier dans l’administration. Photo d’illustration NOMADE.",
+        "ingredients": ""
+      },
+      "en": {
+        "name": "TEST — Assiette Nomade 02",
+        "description": "Demo item to edit in administration. NOMADE illustration photo.",
+        "ingredients": ""
+      },
+      "es": {
+        "name": "TEST — Assiette Nomade 02",
+        "description": "Ficha de demostración para editar en administración. Foto ilustrativa NOMADE.",
+        "ingredients": ""
+      }
+    },
+    "imageUrl": "/images/ravioli.jpg",
+    "available": true,
+    "signature": false,
+    "order": 201,
+    "regularPriceCents": null,
+    "lunchIncluded": true,
+    "lunchPriceCents": 1100
+  },
+  {
+    "id": "11111111-1111-4111-8111-000000000003",
+    "category": "Plats",
+    "translations": {
+      "fr": {
+        "name": "TEST — Assiette Nomade 03",
+        "description": "Carte de démonstration à modifier dans l’administration. Photo d’illustration NOMADE.",
+        "ingredients": ""
+      },
+      "en": {
+        "name": "TEST — Assiette Nomade 03",
+        "description": "Demo item to edit in administration. NOMADE illustration photo.",
+        "ingredients": ""
+      },
+      "es": {
+        "name": "TEST — Assiette Nomade 03",
+        "description": "Ficha de demostración para editar en administración. Foto ilustrativa NOMADE.",
+        "ingredients": ""
+      }
+    },
+    "imageUrl": "/images/magret.jpg",
+    "available": true,
+    "signature": false,
+    "order": 202,
+    "regularPriceCents": null,
+    "lunchIncluded": true,
+    "lunchPriceCents": 1350
+  },
+  {
+    "id": "11111111-1111-4111-8111-000000000004",
+    "category": "Plats",
+    "translations": {
+      "fr": {
+        "name": "TEST — Assiette Nomade 04",
+        "description": "Carte de démonstration à modifier dans l’administration. Photo d’illustration NOMADE.",
+        "ingredients": ""
+      },
+      "en": {
+        "name": "TEST — Assiette Nomade 04",
+        "description": "Demo item to edit in administration. NOMADE illustration photo.",
+        "ingredients": ""
+      },
+      "es": {
+        "name": "TEST — Assiette Nomade 04",
+        "description": "Ficha de demostración para editar en administración. Foto ilustrativa NOMADE.",
+        "ingredients": ""
+      }
+    },
+    "imageUrl": "/images/ravioli.jpg",
+    "available": true,
+    "signature": false,
+    "order": 203,
+    "regularPriceCents": null,
+    "lunchIncluded": true,
+    "lunchPriceCents": 1250
+  },
+  {
+    "id": "11111111-1111-4111-8111-000000000005",
+    "category": "Plats",
+    "translations": {
+      "fr": {
+        "name": "TEST — Assiette Nomade 05",
+        "description": "Carte de démonstration à modifier dans l’administration. Photo d’illustration NOMADE.",
+        "ingredients": ""
+      },
+      "en": {
+        "name": "TEST — Assiette Nomade 05",
+        "description": "Demo item to edit in administration. NOMADE illustration photo.",
+        "ingredients": ""
+      },
+      "es": {
+        "name": "TEST — Assiette Nomade 05",
+        "description": "Ficha de demostración para editar en administración. Foto ilustrativa NOMADE.",
+        "ingredients": ""
+      }
+    },
+    "imageUrl": "/images/magret.jpg",
+    "available": true,
+    "signature": false,
+    "order": 204,
+    "regularPriceCents": null,
+    "lunchIncluded": true,
+    "lunchPriceCents": 1400
+  },
+  {
+    "id": "11111111-1111-4111-8111-000000000006",
+    "category": "Plats",
+    "translations": {
+      "fr": {
+        "name": "TEST — Assiette Nomade 06",
+        "description": "Carte de démonstration à modifier dans l’administration. Photo d’illustration NOMADE.",
+        "ingredients": ""
+      },
+      "en": {
+        "name": "TEST — Assiette Nomade 06",
+        "description": "Demo item to edit in administration. NOMADE illustration photo.",
+        "ingredients": ""
+      },
+      "es": {
+        "name": "TEST — Assiette Nomade 06",
+        "description": "Ficha de demostración para editar en administración. Foto ilustrativa NOMADE.",
+        "ingredients": ""
+      }
+    },
+    "imageUrl": "/images/ravioli.jpg",
+    "available": true,
+    "signature": false,
+    "order": 205,
+    "regularPriceCents": null,
+    "lunchIncluded": true,
+    "lunchPriceCents": 1000
+  },
+  {
+    "id": "11111111-1111-4111-8111-000000000007",
+    "category": "Boissons",
+    "translations": {
+      "fr": {
+        "name": "TEST — Boisson maison 01",
+        "description": "Carte de démonstration à modifier dans l’administration. Photo d’illustration NOMADE.",
+        "ingredients": ""
+      },
+      "en": {
+        "name": "TEST — Boisson maison 01",
+        "description": "Demo item to edit in administration. NOMADE illustration photo.",
+        "ingredients": ""
+      },
+      "es": {
+        "name": "TEST — Boisson maison 01",
+        "description": "Ficha de demostración para editar en administración. Foto ilustrativa NOMADE.",
+        "ingredients": ""
+      }
+    },
+    "imageUrl": "/images/cocktails.jpg",
+    "available": true,
+    "signature": false,
+    "order": 206,
+    "regularPriceCents": null,
+    "lunchIncluded": true,
+    "lunchPriceCents": 300
+  },
+  {
+    "id": "11111111-1111-4111-8111-000000000008",
+    "category": "Boissons",
+    "translations": {
+      "fr": {
+        "name": "TEST — Boisson maison 02",
+        "description": "Carte de démonstration à modifier dans l’administration. Photo d’illustration NOMADE.",
+        "ingredients": ""
+      },
+      "en": {
+        "name": "TEST — Boisson maison 02",
+        "description": "Demo item to edit in administration. NOMADE illustration photo.",
+        "ingredients": ""
+      },
+      "es": {
+        "name": "TEST — Boisson maison 02",
+        "description": "Ficha de demostración para editar en administración. Foto ilustrativa NOMADE.",
+        "ingredients": ""
+      }
+    },
+    "imageUrl": "/images/cocktails.jpg",
+    "available": true,
+    "signature": false,
+    "order": 207,
+    "regularPriceCents": null,
+    "lunchIncluded": true,
+    "lunchPriceCents": 450
   }
 ]

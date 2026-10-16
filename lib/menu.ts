@@ -11,9 +11,13 @@ export type Dish = {
   available: boolean;
   signature: boolean;
   order: number;
+  regularPriceCents: number | null;
+  lunchIncluded: boolean;
+  lunchPriceCents: number | null;
 };
 
-const file = () => process.env.NOMADE_MENU_FILE || path.join(process.cwd(), 'data', 'menu.json');
+export const menuFile = () => process.env.NOMADE_MENU_FILE || path.join(process.cwd(), 'data', 'menu.json');
+const file = menuFile;
 export const mediaDirectory = () => path.join(path.dirname(file()), 'media');
 
 export async function readMenu(): Promise<Dish[]> {
@@ -47,6 +51,9 @@ function migrateDish(input: unknown): Dish {
     available: typeof d.available === 'boolean' ? d.available : true,
     signature: typeof d.signature === 'boolean' ? d.signature : false,
     order: Number.isSafeInteger(d.order) ? d.order as number : 0,
+    regularPriceCents: Number.isSafeInteger(d.regularPriceCents) && (d.regularPriceCents as number) > 0 ? d.regularPriceCents as number : null,
+    lunchIncluded: typeof d.lunchIncluded === 'boolean' ? d.lunchIncluded : false,
+    lunchPriceCents: Number.isSafeInteger(d.lunchPriceCents) && (d.lunchPriceCents as number) > 0 ? d.lunchPriceCents as number : null,
   };
 }
 
@@ -66,13 +73,23 @@ export function validateDish(input: unknown): Dish {
   }
   const imageUrl = str(d.imageUrl, 500);
   if (imageUrl === null) throw new Error('Invalid image URL');
-  if (imageUrl && !(/^\/api\/menu\/media\/[a-f0-9-]{36}\.(jpg|png|webp)$/.test(imageUrl) || /^https:\/\/[\w.-]+(?:\/[\w\-./%?=&]+)?$/.test(imageUrl))) throw new Error('Image URL must be HTTPS or an uploaded file');
+  if (imageUrl && !(/^\/images\/(ravioli|magret|cocktails)\.jpg$/.test(imageUrl) || /^\/api\/menu\/media\/[a-f0-9-]{36}\.(jpg|png|webp)$/.test(imageUrl) || /^https:\/\/[\w.-]+(?:\/[\w\-./%?=&]+)?$/.test(imageUrl))) throw new Error('Image URL must be HTTPS or an uploaded file');
   if (!Number.isSafeInteger(d.order) || Math.abs(d.order as number) > 100000) throw new Error('Invalid order');
   if (typeof d.available !== 'boolean' || typeof d.signature !== 'boolean') throw new Error('Invalid flags');
+  const regularPriceCents = d.regularPriceCents === null || d.regularPriceCents === undefined ? null : d.regularPriceCents;
+  const lunchPriceCents = d.lunchPriceCents === null || d.lunchPriceCents === undefined ? null : d.lunchPriceCents;
+  if (regularPriceCents !== null && (!Number.isSafeInteger(regularPriceCents) || (regularPriceCents as number) <= 0 || (regularPriceCents as number) > 1000000)) throw new Error('Invalid regular price');
+  if (lunchPriceCents !== null && (!Number.isSafeInteger(lunchPriceCents) || (lunchPriceCents as number) <= 0 || (lunchPriceCents as number) > 1000000)) throw new Error('Invalid Déjeuner price');
+  if (typeof d.lunchIncluded !== 'boolean') throw new Error('Invalid Déjeuner flag');
+  if (d.lunchIncluded && !['plats','boissons'].includes(category.toLocaleLowerCase('fr'))) throw new Error('Déjeuner: utilisez la catégorie Plats ou Boissons');
+  if (d.lunchIncluded && lunchPriceCents === null) throw new Error('A special price is required for Déjeuner à partager');
   return {
     id: typeof d.id === 'string' && /^[a-f0-9-]{36}$/.test(d.id) ? d.id : crypto.randomUUID(),
     category, translations, imageUrl,
     available: d.available, signature: d.signature, order: d.order as number,
+    regularPriceCents: regularPriceCents as number | null,
+    lunchIncluded: d.lunchIncluded,
+    lunchPriceCents: lunchPriceCents as number | null,
   };
 }
 

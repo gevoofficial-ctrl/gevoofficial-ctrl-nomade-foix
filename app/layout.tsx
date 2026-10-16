@@ -4,6 +4,7 @@ import { siteUrl } from '../lib/seo';
 import GoogleAnalytics from '../components/GoogleAnalytics';
 import './menu.css';
 import './reservation.css';
+import './dejeuner.css';
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),

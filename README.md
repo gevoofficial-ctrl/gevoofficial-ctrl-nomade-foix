@@ -24,7 +24,7 @@ environment variables in the Passenger/Node application configuration before use
 - `NOMADE_ADMIN_SECRET`: a random string of at least 32 characters for session signing.
 - `NOMADE_MENU_FILE` (optional): an absolute path to `menu.json` outside the checkout.
 
-The default data path is `data/menu.json` in the application directory. It is ignored by Git;
+The default data path is `data/menu.json` in the application directory. Although `/data/` is ignored, the starter `menu.json` is already tracked: preserve the live menu before every deployment;
 uploaded photos and videos live in `data/media`. Keep this directory writable by the Node
 process, and back it up independently. The staging deploy resets tracked Git files, but does
 not delete this ignored directory. Never commit credentials or restaurant data to Git.
@@ -49,3 +49,34 @@ Optional overrides are `NOMADE_SMTP_HOST`, `NOMADE_SMTP_PORT`, `NOMADE_SMTP_SECU
 (implicit TLS on a nonstandard port), `NOMADE_SMTP_USER`, `NOMADE_SMTP_FROM`, and
 `NOMADE_RESERVATIONS_TO`. The password remains on the server, never in Git. Until it is
 configured, the form offers a phone fallback and refuses submissions.
+
+## Déjeuner à partager (local integration)
+
+The `/fr/dejeuner`, `/en/dejeuner` and `/es/dejeuner` pages use the same menu and
+`/admin` editor. Use category `Plats` for mains or `Boissons` for drinks, enable
+participation and enter the special price. The normal price is optional and is
+not displayed on the ordinary menu. Existing uploads and the three bundled dish/
+cocktail photos can be used. TEST cards are demonstration data to edit or delete
+in the menu editor; their photos are illustrative and prices are fictitious.
+
+Same-day submission opens 09:30–11:30 Europe/Paris on weekdays. Future weekday
+preorders remain possible outside this window. Pickup is 11:40–14:00 every ten
+minutes. One to four mains use each item's normal price; from five mains the
+special price applies to the mains. Drinks always use their normal price. Until a
+normal price is set in the administration, the affected selection cannot be sent.
+No online payment.
+
+Email shares the reservation SMTP configuration through `lib/mail.ts`. The
+technical numbering/idempotency file defaults to `dejeuner-orders.json` alongside
+the menu. `NOMADE_LUNCH_STATE_FILE` can set a persistent absolute path. Keep this
+file writable, preserve it across releases and back it up with the menu; deleting
+it resets the sequence and loses duplicate protection. Never commit runtime data.
+This file-based lock/atomic-rename implementation is for one Node host with a shared
+persistent local data directory, not independent ephemeral instances.
+
+The browser keeps the current draft, immutable submission and short receipt in
+sessionStorage for reload/retry in the same tab. If SMTP delivery to the restaurant
+has an uncertain outcome, the original number is retained and the user is asked
+to call; mail is not automatically resent because SMTP cannot prove exactly-once
+delivery. A customer-email failure leaves the accepted restaurant order intact.
+There is no order dashboard or customer order-details page.

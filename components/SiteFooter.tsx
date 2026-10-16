@@ -17,6 +17,7 @@ export default function SiteFooter({ lang }: { lang: 'fr' | 'en' | 'es' }) {
     <Link href={`/${lang}/mentions-legales`}>{t.legal}</Link>
     <Link href={`/${lang}/confidentialite`}>{t.privacy}</Link>
     <Link href={`/${lang}/allergenes`}>{t.allergens}</Link>
+    <Link href={`/${lang}/dejeuner`}>Déjeuner à partager</Link>
     <CookieSettingsButton>{t.cookies}</CookieSettingsButton>
     <Link href={`/${lang}#top`}>{t.discover} <ArrowUpRight size={14} /></Link>
     <a href="https://www.instagram.com/nomadefoix?stkn=a3Y4eGp6MmM4Zjdq" target="_blank" rel="noopener noreferrer" aria-label="Instagram — @nomadefoix"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg></a>
