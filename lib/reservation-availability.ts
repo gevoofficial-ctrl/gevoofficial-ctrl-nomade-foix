@@ -1,4 +1,7 @@
 const sheetsWebhook = 'https://script.google.com/macros/s/AKfycbyIyOWq3t4XFYFjZJGpEYJpYvfOmriYIP8-PIAORzf2KBtWChSr1RT1rMqi4TQSJRuY/exec';
+const lunchClosureCacheTtlMs = 20_000;
+let lunchClosureCache: { dates:string[]; expiresAt:number }|null = null;
+let lunchClosureRequest: Promise<string[]>|null = null;
 
 function reservationsToken() {
   return process.env.NOMADE_RESERVATIONS_TOKEN?.trim() ?? '';
@@ -20,4 +23,22 @@ export async function reservationClosedDates() {
   return body.closedDates
     .map((item:unknown) => typeof item === 'string' ? item : item && typeof item === 'object' && 'date' in item ? item.date : '')
     .filter((date:unknown):date is string => typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date));
+}
+
+/**
+ * Keep repeated lunch-calendar opens responsive without relaxing checkout
+ * safety. The order endpoint deliberately calls reservationClosedDates()
+ * directly, so it always rechecks the current reservation closure list.
+ */
+export async function lunchReservationClosedDates() {
+  if (lunchClosureCache && lunchClosureCache.expiresAt>Date.now()) return [...lunchClosureCache.dates];
+  if (!lunchClosureRequest) {
+    lunchClosureRequest=reservationClosedDates()
+      .then(dates=>{
+        lunchClosureCache={dates:[...dates],expiresAt:Date.now()+lunchClosureCacheTtlMs};
+        return dates;
+      })
+      .finally(()=>{lunchClosureRequest=null;});
+  }
+  return (await lunchClosureRequest).slice();
 }

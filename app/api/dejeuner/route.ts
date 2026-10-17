@@ -6,7 +6,7 @@ import { sameOrigin } from '../../../lib/admin-auth';
 import { menuFile, readMenu, sortedMenu, type Dish, type Lang, localized } from '../../../lib/menu';
 import { allowedDate, euros, lunchAvailable, lunchKind, lunchLinePrice, pickupSlots } from '../../../lib/lunch';
 import { mailConfiguration, mailTransport } from '../../../lib/mail';
-import { reservationClosedDates } from '../../../lib/reservation-availability';
+import { lunchReservationClosedDates, reservationClosedDates } from '../../../lib/reservation-availability';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -60,7 +60,7 @@ export async function GET(request:NextRequest) {
   const requestedLang=request.nextUrl.searchParams.get('lang');
   const lang:Lang=requestedLang==='en'||requestedLang==='es'?requestedLang:'fr';
   let menu:Dish[], closedDates:string[];
-  try { [menu,closedDates]=await Promise.all([readMenu(),reservationClosedDates()]); }
+  try { [menu,closedDates]=await Promise.all([readMenu(),lunchReservationClosedDates()]); }
   catch { return NextResponse.json({error:'Availability is temporarily unavailable'},{status:503,headers:{'Cache-Control':'no-store'}}); }
   menu=sortedMenu(menu).filter(lunchAvailable);
   const item=(dish:Dish)=>{
