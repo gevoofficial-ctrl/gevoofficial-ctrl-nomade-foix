@@ -1,7 +1,8 @@
 import type { Dish } from './menu';
 
-export const pickupSlots = Array.from({ length:15 }, (_, i) => {
-  const minutes = 700 + i * 10;
+/** Pickup is available every ten minutes from 12:00 through 14:00 inclusive. */
+export const pickupSlots = Array.from({ length:13 }, (_, i) => {
+  const minutes = 720 + i * 10;
   return `${Math.floor(minutes / 60)}:${String(minutes % 60).padStart(2, '0')}`;
 });
 export function frenchNow(now = new Date()) {

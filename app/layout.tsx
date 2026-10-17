@@ -5,6 +5,7 @@ import GoogleAnalytics from '../components/GoogleAnalytics';
 import './menu.css';
 import './reservation.css';
 import './dejeuner.css';
+import './dejeuner-fixes.css';
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),

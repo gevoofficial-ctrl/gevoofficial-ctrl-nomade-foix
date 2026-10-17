@@ -51,9 +51,9 @@ function replay(record:OrderRecord, fingerprint:string) {
   return NextResponse.json({ok:false,pending,orderNumber:record.orderNumber,code:pending?'PENDING':'DELIVERY_UNCERTAIN',error:pending?'Envoi en cours…':`L’envoi de la commande ${record.orderNumber} nécessite une vérification. Appelez-nous au 07 45 26 28 23.`},{status:pending?202:409,headers:{'Cache-Control':'no-store','Retry-After':'2'}});
 }
 const escapeHtml=(value:string)=>value.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!));
-function confirmationHtml(name:string, orderNumber:string, date:string, time:string, lines:Line[], total:number, comment:string) {
+function confirmationHtml(firstName:string, orderNumber:string, date:string, time:string, lines:Line[], total:number, comment:string) {
   const rows=lines.map(line=>`<tr><td style="padding:12px 0;border-bottom:1px solid #dfd5c5">${escapeHtml(line.dish.translations.fr.name)} × ${line.quantity}</td><td style="padding:12px 0;text-align:right;border-bottom:1px solid #dfd5c5">${euros(line.total)}</td></tr>`).join('');
-  return `<!doctype html><html lang="fr"><body style="margin:0;background:#f1eadf;color:#29241d;font-family:Arial,sans-serif"><table role="presentation" width="100%"><tr><td align="center" style="padding:32px 16px"><table role="presentation" width="100%" style="max-width:600px;background:#fffaf2"><tr><td style="padding:32px;background:#17140f;color:#e9e1d1"><p style="letter-spacing:5px;font-size:14px">NOMADE · FOIX</p><h1 style="font-family:Georgia,serif;font-size:34px;font-weight:normal">Déjeuner à partager</h1><p>Votre commande ${orderNumber} est bien enregistrée.</p></td></tr><tr><td style="padding:32px"><p>Bonjour ${escapeHtml(name)},</p><p>Merci pour votre commande et pour votre choix de NOMADE. Vous trouverez ci-dessous le récapitulatif de votre commande.</p><p><strong>Retrait le ${escapeHtml(date)} à ${escapeHtml(time)}</strong><br>42 Rue des Chapeliers · 09000 Foix</p><table width="100%" style="border-collapse:collapse">${rows}<tr><td style="padding:18px 0"><strong>Total</strong></td><td style="text-align:right;font-size:24px">${euros(total)}</td></tr></table>${comment?`<p><strong>Commentaire</strong><br>${escapeHtml(comment).replace(/\n/g,'<br>')}</p>`:''}<p style="padding:16px;background:#f1eadf">Le règlement sera effectué sur place le jour du retrait.</p><p>Nous vous attendons avec plaisir chez NOMADE.<br>À très bientôt.</p></td></tr></table></td></tr></table></body></html>`;
+  return `<!doctype html><html lang="fr"><body style="margin:0;background:#f1eadf;color:#29241d;font-family:Arial,sans-serif"><table role="presentation" width="100%"><tr><td align="center" style="padding:32px 16px"><table role="presentation" width="100%" style="max-width:600px;background:#fffaf2"><tr><td style="padding:32px;background:#17140f;color:#e9e1d1"><p style="letter-spacing:5px;font-size:14px">NOMADE · FOIX</p><h1 style="font-family:Georgia,serif;font-size:34px;font-weight:normal">Déjeuner à partager</h1><p>Votre commande ${orderNumber} est bien enregistrée.</p></td></tr><tr><td style="padding:32px"><p>Bonjour ${escapeHtml(firstName)},</p><p>Merci pour votre commande et pour votre choix de NOMADE. Vous trouverez ci-dessous le récapitulatif de votre commande.</p><p><strong>Retrait le ${escapeHtml(date)} à ${escapeHtml(time)}</strong><br>42 Rue des Chapeliers · 09000 Foix</p><table width="100%" style="border-collapse:collapse">${rows}<tr><td style="padding:18px 0"><strong>Total</strong></td><td style="text-align:right;font-size:24px">${euros(total)}</td></tr></table>${comment?`<p><strong>Commentaire</strong><br>${escapeHtml(comment).replace(/\n/g,'<br>')}</p>`:''}<p style="padding:16px;background:#f1eadf">Le règlement sera effectué sur place le jour du retrait.</p><p>Nous vous attendons avec plaisir chez NOMADE.<br>À très bientôt.</p></td></tr></table></td></tr></table></body></html>`;
 }
 
 export async function GET(request:NextRequest) {
@@ -81,16 +81,17 @@ export async function POST(request:NextRequest) {
   if (body.website) return NextResponse.json({error:'Requête invalide.'},{status:400});
   const key=typeof body.idempotencyKey==='string'?body.idempotencyKey:'';
   if (!/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(key)) return NextResponse.json({error:'Identifiant de tentative invalide.'},{status:400});
-  const fingerprint=createHash('sha256').update(JSON.stringify([body.name,body.phone,body.email,body.date,body.time,body.comment??'',body.dishes,body.drinks])).digest('hex');
+  const legacyName=typeof body.name==='string' && typeof body.firstName!=='string';
+  const fingerprint=createHash('sha256').update(JSON.stringify(legacyName?[body.name,body.phone,body.email,body.date,body.time,body.comment??'',body.dishes,body.drinks]:[body.firstName,body.lastName,body.phone,body.email,body.date,body.time,body.comment??'',body.dishes,body.drinks])).digest('hex');
   try {
     // Resolve an earlier attempt before consulting mutable menu, clock or SMTP settings.
     const previous=await withState(state=>Object.hasOwn(state.idempotency,key)?state.idempotency[key]:null);
     if (previous) return replay(previous,fingerprint);
     const text=(value:unknown,max:number)=>typeof value==='string' && value.length<=max && !/[\r\n\u0000]/.test(value)?value.trim():'';
-    const name=text(body.name,100), phone=text(body.phone,25), email=text(body.email,254);
+    const firstName=text(legacyName?body.name:body.firstName,100), lastName=text(legacyName?'':body.lastName,100), phone=text(body.phone,25), email=text(body.email,254);
     const comment=body.comment===undefined?'':typeof body.comment==='string'?body.comment.replace(/\r\n?/g,'\n').trim():null;
     const date=body.date, time=body.time;
-    if (name.length<2 || !/^[+0-9 ().-]{6,25}$/.test(phone) || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !allowedDate(date) || typeof time!=='string' || !pickupSlots.includes(time) || comment===null || comment.length>1000 || comment.includes('\u0000')) return NextResponse.json({error:'Veuillez vérifier les informations de commande.'},{status:400});
+    if (firstName.length<2 || (!legacyName&&lastName.length<2) || !/^[+0-9 ().-]{6,25}$/.test(phone) || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !allowedDate(date) || typeof time!=='string' || !pickupSlots.includes(time) || comment===null || comment.length>1000 || comment.includes('\u0000')) return NextResponse.json({error:'Veuillez vérifier les informations de commande.'},{status:400});
     try {
       if ((await reservationClosedDates()).includes(date)) return NextResponse.json({code:'RESTAURANT_CLOSED',error:'Le restaurant est fermé à cette date.'},{status:409});
     } catch { return NextResponse.json({error:'La disponibilité est momentanément indisponible. Réessayez plus tard ou appelez-nous au 07 45 26 28 23.'},{status:503}); }
@@ -130,12 +131,13 @@ export async function POST(request:NextRequest) {
     let restaurantSent=false, confirmationEmailSent=false;
     try {
       const transport=mailTransport(config);
-      await transport.sendMail({from:config.from,to:config.to,replyTo:email,subject:`[LUNCH] ${number} — Nouvelle commande`,text:`Commande ${number}\n\nNom : ${name}\nTéléphone : ${phone}\nE-mail : ${email}\n\n${summary}`});
+      const customerDetails=legacyName?`Nom : ${firstName}`:`Prénom : ${firstName}\nNom : ${lastName}`;
+      await transport.sendMail({from:config.from,to:config.to,replyTo:email,subject:`[LUNCH] ${number} — Nouvelle commande`,text:`Commande ${number}\n\n${customerDetails}\nTéléphone : ${phone}\nE-mail : ${email}\n\n${summary}`});
       restaurantSent=true;
       // Persist restaurant acceptance before the optional customer delivery.
       await withState(state=>{state.idempotency[key].restaurantAccepted=true;});
       try {
-        await transport.sendMail({from:config.from,to:email,subject:`Confirmation de votre commande ${number} — NOMADE`,text:`Bonjour ${name},\n\nVotre commande ${number} est bien enregistrée.\n\nMerci pour votre commande et pour votre choix de NOMADE.\nVous trouverez ci-dessous le récapitulatif de votre commande.\n\n${summary}\n\nNous vous attendons avec plaisir chez NOMADE.\nÀ très bientôt.`,html:confirmationHtml(name,number,date,time,all,total,comment)});
+        await transport.sendMail({from:config.from,to:email,subject:`Confirmation de votre commande ${number} — NOMADE`,text:`Bonjour ${firstName},\n\nVotre commande ${number} est bien enregistrée.\n\nMerci pour votre commande et pour votre choix de NOMADE.\nVous trouverez ci-dessous le récapitulatif de votre commande.\n\n${summary}\n\nNous vous attendons avec plaisir chez NOMADE.\nÀ très bientôt.`,html:confirmationHtml(firstName,number,date,time,all,total,comment)});
         confirmationEmailSent=true;
       } catch { /* Accepted order remains authoritative; a retry must never resend either mail. */ }
       await withState(state=>{state.idempotency[key].status='accepted';state.idempotency[key].confirmationEmailSent=confirmationEmailSent;});
