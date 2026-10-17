@@ -73,10 +73,11 @@ const cssWithoutFontImport = css.replace(
 
 // This stylesheet is linked after route CSS, so picker fixes must also live here.
 const lunchOverlayCss = `
-.dejeunerPage.printSection{overflow:visible;position:relative;z-index:1}
+.dejeunerPage.printSection{overflow-x:clip;overflow-y:visible;position:relative;z-index:1}
 .dejeunerCheckout{display:grid}
 .lunchPicker.isOpen{z-index:50}
 .dejeunerFields .emailField{grid-column:auto}
+.lunchRail{box-sizing:border-box;max-width:100%}
 `;
 
 export function GET() {
