@@ -40,6 +40,22 @@ function ItemRail({title,id,items,quantities,onQuantity,t,disabled,mainCount,kin
   </section>;
 }
 
+function LunchLoading({label}:{label:string}) {
+  return <section className="lunchLoading" role="status" aria-label={label}>
+    <span className="srOnly">{label}</span>
+    <div aria-hidden="true">
+      <div className="lunchLoadingBrand"><Image src="/nomade-logo-light.svg" alt="" width={120} height={41} /><span /></div>
+      <div className="lunchGroupHead"><div className="lunchSkeleton lunchSkeletonHeading" /></div>
+      <div className="lunchRail lunchRailShort lunchSkeletonRail">
+        {[0,1,2].map(index=><div className="lunchCard lunchSkeletonCard" key={index}>
+          <div className="lunchCardImage lunchSkeleton" />
+          <div className="lunchCardBody"><div className="lunchSkeleton lunchSkeletonTitle" /><div className="lunchSkeletonDescription"><span className="lunchSkeleton" /><span className="lunchSkeleton" /></div><div className="lunchSkeleton lunchSkeletonPrice" /><div className="lunchSkeleton lunchSkeletonQuantity" /></div>
+        </div>)}
+      </div>
+    </div>
+  </section>;
+}
+
 export default function DejeunerForm({lang}:{lang:Lang}) {
   const t=copy[lang];
   const initialDate=nextPickupDate();
@@ -54,6 +70,8 @@ export default function DejeunerForm({lang}:{lang:Lang}) {
   const [status,setStatus]=useState('');
   const [busy,setBusy]=useState(false);
   const [loaded,setLoaded]=useState(false);
+  const [menuError,setMenuError]=useState(false);
+  const [menuRequest,setMenuRequest]=useState(0);
   const [restored,setRestored]=useState(false);
   const [,tick]=useState(0);
   const [dateOpen,setDateOpen]=useState(false);
@@ -62,7 +80,7 @@ export default function DejeunerForm({lang}:{lang:Lang}) {
   const pickerRef=useRef<HTMLFieldSetElement>(null);
   const sending=useRef(false);
   useEffect(()=>{const restoreFrame=requestAnimationFrame(()=>{try {const saved=sessionStorage.getItem(storageKey);if(saved){const draft=JSON.parse(saved) as Draft;if(draft.fields&&typeof draft.date==='string'&&draft.quantities){setQuantities(draft.quantities);setFields(draft.fields);setDate(draft.date);setTime(draft.time||'');setAttempt(draft.attempt||null);setReceipt(draft.receipt||null);if(draft.attempt)setStatus(t.restored);}}}catch{}setRestored(true);});const timer=setInterval(()=>tick(n=>n+1),30000);return()=>{cancelAnimationFrame(restoreFrame);clearInterval(timer);};},[t.restored]);
-  useEffect(()=>{let active=true;fetch(`/api/dejeuner?lang=${lang}`,{cache:'no-store'}).then(async response=>{if(!response.ok)throw new Error();return response.json();}).then(body=>{if(!Array.isArray(body.dishes)||!Array.isArray(body.drinks)||!Array.isArray(body.pickupSlots)||!Array.isArray(body.closedDates))throw new Error();const closedDates=body.closedDates.filter((value:unknown):value is string=>typeof value==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(value));if(active){setItems({...body,closedDates});setDate(current=>allowedDate(current)&&!closedDates.includes(current)?current:nextPickupDate(new Date(),closedDates));}}).catch(()=>{if(active)setStatus(t.unavailable);}).finally(()=>{if(active)setLoaded(true);});return()=>{active=false;};},[lang,t.unavailable]);
+  useEffect(()=>{let active=true;const controller=new AbortController();const timeout=setTimeout(()=>controller.abort(),15000);fetch(`/api/dejeuner?lang=${lang}`,{cache:'no-store',signal:controller.signal}).then(async response=>{if(!response.ok)throw new Error();return response.json();}).then(body=>{if(!Array.isArray(body.dishes)||!Array.isArray(body.drinks)||!Array.isArray(body.pickupSlots)||!Array.isArray(body.closedDates))throw new Error();const closedDates=body.closedDates.filter((value:unknown):value is string=>typeof value==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(value));if(active){setItems({...body,closedDates});setDate(current=>allowedDate(current)&&!closedDates.includes(current)?current:nextPickupDate(new Date(),closedDates));}}).catch(()=>{if(active)setMenuError(true);}).finally(()=>{clearTimeout(timeout);if(active)setLoaded(true);});return()=>{active=false;clearTimeout(timeout);controller.abort();};},[lang,menuRequest]);
   useEffect(()=>{const close=(event:PointerEvent)=>{if(pickerRef.current&&!pickerRef.current.contains(event.target as Node)){setDateOpen(false);setTimeOpen(false);}};document.addEventListener('pointerdown',close);return()=>document.removeEventListener('pointerdown',close);},[]);
   useEffect(()=>{if(!restored)return;try{sessionStorage.setItem(storageKey,JSON.stringify({quantities,fields,date,time,attempt,receipt} satisfies Draft));}catch{}},[quantities,fields,date,time,attempt,receipt,restored]);
   const mainCount=items.dishes.reduce((sum,item)=>sum+(quantities[item.id]||0),0);
@@ -91,8 +109,10 @@ export default function DejeunerForm({lang}:{lang:Lang}) {
   return <main className="dejeunerPage printSection" lang={lang}>
     <header className="dejeunerHero"><Link className="textLink" href={`/${lang}`}>← NOMADE · FOIX</Link><p className="eyebrow">{t.eyebrow}</p><h1>{t.title}</h1><p className="lead">{t.intro}</p><p className="dejeunerPickup">{t.pickup}</p><nav className="menuLanguageSwitcher" aria-label="Language">{(['fr','en','es'] as const).map(language=><Link key={language} href={`/${language}/dejeuner`} aria-current={lang===language?'page':undefined}>{language.toUpperCase()}</Link>)}</nav></header>
     {receipt?<section className="lunchReceipt" role="status"><p>{(receipt.confirmationEmailSent?t.success:t.noEmail).replace('{order}',receipt.orderNumber)}</p><button className="button" onClick={newOrder}>{t.newOrder}</button></section>:<>
-      {!loaded&&<p className="dejeunerEmpty" role="status">{t.loading}</p>}{loaded&&items.dishes.length===0&&!attempt&&<p className="dejeunerEmpty">{status||t.empty}</p>}
-      {(items.dishes.length>0||attempt)&&<form className="dejeunerForm" onSubmit={submit}>
+      {!loaded&&<LunchLoading label={t.loading} />}
+      {loaded&&menuError&&<div className="dejeunerEmpty lunchLoadError" role="status"><p>{t.unavailable}</p><button type="button" className="button" onClick={()=>{setMenuError(false);setLoaded(false);setMenuRequest(value=>value+1);}}>{lang==='fr'?'Réessayer':lang==='en'?'Try again':'Reintentar'}</button></div>}
+      {loaded&&!menuError&&items.dishes.length===0&&!attempt&&<p className="dejeunerEmpty">{status||t.empty}</p>}
+      {loaded&&((!menuError&&items.dishes.length>0)||attempt)&&<form className="dejeunerForm lunchMenuReady" onSubmit={submit}>
         <ItemRail title={t.dishes} id="lunch-mains" items={items.dishes} quantities={quantities} onQuantity={onQuantity} t={t} disabled={locked} mainCount={mainCount} kind="main" />
         {items.drinks.length>0&&<ItemRail title={t.drinks} id="lunch-drinks" items={items.drinks} quantities={quantities} onQuantity={onQuantity} t={t} disabled={locked} mainCount={mainCount} kind="drink" />}
         <section className="dejeunerCheckout"><fieldset className="dejeunerFields" ref={pickerRef} disabled={locked} onKeyDown={event=>{if(event.key==='Escape'){setDateOpen(false);setTimeOpen(false);}}}><legend className="srOnly">{t.title}</legend>
