@@ -109,9 +109,9 @@ export async function POST(request:NextRequest) {
     };
     const dishes=parseLines(body.dishes,'main'), drinks=parseLines(body.drinks,'drink');
     if (!dishes || !drinks || dishes.length===0) return NextResponse.json({error:'Ajoutez au moins un plat à votre commande.'},{status:400});
-    const itemCount=[...dishes,...drinks].reduce((n,line)=>n+line.quantity,0);
+    const mainCount=dishes.reduce((n,line)=>n+line.quantity,0), drinkCount=drinks.reduce((n,line)=>n+line.quantity,0);
     const priced=(lines:Line[])=>lines.map(line=>{
-      const unit=lunchLinePrice(line.dish,itemCount);
+      const unit=lunchLinePrice(line.dish,mainCount,drinkCount);
       return unit===null?null:{...line,total:unit*line.quantity};
     });
     const pricedDishes=priced(dishes), pricedDrinks=priced(drinks);
