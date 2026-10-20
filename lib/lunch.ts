@@ -34,10 +34,10 @@ export function lunchKind(dish: Pick<Dish,'category'>): 'main'|'drink'|null {
 export function lunchAvailable(dish:Dish) {
   return dish.available && dish.lunchIncluded && Number.isSafeInteger(dish.lunchPriceCents) && (dish.lunchPriceCents ?? 0) > 0 && lunchKind(dish) !== null;
 }
-/** The special price applies to every main once four mains are selected. */
-export function hasLunchSpecialPrice(mainCount:number) { return mainCount >= 4; }
-export function lunchLinePrice(dish:Dish, kind:'main'|'drink', mainCount:number) {
-  const price = kind === 'main' && hasLunchSpecialPrice(mainCount) ? dish.lunchPriceCents : dish.regularPriceCents;
+/** The special price applies to every cart item once four items are selected. */
+export function hasLunchSpecialPrice(itemCount:number) { return itemCount >= 4; }
+export function lunchLinePrice(dish:Dish, itemCount:number) {
+  const price = hasLunchSpecialPrice(itemCount) ? dish.lunchPriceCents : dish.regularPriceCents;
   return Number.isSafeInteger(price) && (price ?? 0) > 0 ? price : null;
 }
 export function euros(cents:number) { return `${(cents / 100).toFixed(2).replace('.', ',')} €`; }
