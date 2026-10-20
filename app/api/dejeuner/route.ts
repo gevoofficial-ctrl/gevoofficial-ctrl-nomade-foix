@@ -110,11 +110,11 @@ export async function POST(request:NextRequest) {
     const dishes=parseLines(body.dishes,'main'), drinks=parseLines(body.drinks,'drink');
     if (!dishes || !drinks || dishes.length===0) return NextResponse.json({error:'Ajoutez au moins un plat à votre commande.'},{status:400});
     const mainCount=dishes.reduce((n,line)=>n+line.quantity,0), drinkCount=drinks.reduce((n,line)=>n+line.quantity,0);
-    const priced=(lines:Line[])=>lines.map(line=>{
-      const unit=lunchLinePrice(line.dish,mainCount,drinkCount);
+    const priced=(lines:Line[],kind:'main'|'drink')=>lines.map(line=>{
+      const unit=lunchLinePrice(line.dish,kind,mainCount,drinkCount);
       return unit===null?null:{...line,total:unit*line.quantity};
     });
-    const pricedDishes=priced(dishes), pricedDrinks=priced(drinks);
+    const pricedDishes=priced(dishes,'main'), pricedDrinks=priced(drinks,'drink');
     if (pricedDishes.some(line=>line===null)||pricedDrinks.some(line=>line===null)) return NextResponse.json({error:'Les prix habituels de cette sélection seront bientôt disponibles. Ajoutez-les dans l’administration pour commander jusqu’à 3 articles.'},{status:400});
     const finalDishes=pricedDishes as Line[], finalDrinks=pricedDrinks as Line[];
     const config=mailConfiguration();

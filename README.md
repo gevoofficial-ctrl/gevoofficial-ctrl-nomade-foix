@@ -61,9 +61,8 @@ in the menu editor; their photos are illustrative and prices are fictitious.
 
 Same-day submission opens 09:30–11:30 Europe/Paris on weekdays. Future weekday
 preorders remain possible outside this window. Pickup is 11:40–14:00 every ten
-minutes. Normal prices apply while there are at most three mains and at most three
-drinks. From four mains or four drinks, the special price applies to every cart item.
-Until a
+minutes. Each category is calculated independently: four mains apply the special price
+to every main, while four drinks apply it to every drink. Until a
 normal price is set in the administration, the affected selection cannot be sent.
 No online payment.
 

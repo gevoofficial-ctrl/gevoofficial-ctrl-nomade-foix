@@ -34,10 +34,10 @@ export function lunchKind(dish: Pick<Dish,'category'>): 'main'|'drink'|null {
 export function lunchAvailable(dish:Dish) {
   return dish.available && dish.lunchIncluded && Number.isSafeInteger(dish.lunchPriceCents) && (dish.lunchPriceCents ?? 0) > 0 && lunchKind(dish) !== null;
 }
-/** Four mains or four drinks activate the special price for every cart item. */
-export function hasLunchSpecialPrice(mainCount:number, drinkCount:number) { return mainCount >= 4 || drinkCount >= 4; }
-export function lunchLinePrice(dish:Dish, mainCount:number, drinkCount:number) {
-  const price = hasLunchSpecialPrice(mainCount, drinkCount) ? dish.lunchPriceCents : dish.regularPriceCents;
+/** Each category earns its own special price once four items in that category are selected. */
+export function hasLunchSpecialPrice(itemCount:number) { return itemCount >= 4; }
+export function lunchLinePrice(dish:Dish, kind:'main'|'drink', mainCount:number, drinkCount:number) {
+  const price = hasLunchSpecialPrice(kind === 'main' ? mainCount : drinkCount) ? dish.lunchPriceCents : dish.regularPriceCents;
   return Number.isSafeInteger(price) && (price ?? 0) > 0 ? price : null;
 }
 export function euros(cents:number) { return `${(cents / 100).toFixed(2).replace('.', ',')} €`; }
