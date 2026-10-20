@@ -4,9 +4,9 @@ import Link from 'next/link';
 import CookieSettingsButton from './CookieSettingsButton';
 
 const copy = {
-  fr: { legal: 'Mentions légales', privacy: 'Confidentialité', allergens: 'Allergènes', lunch: 'Déjeuner à partager', discover: 'Découvrir', cookies: 'Gérer les cookies' },
-  en: { legal: 'Legal notice', privacy: 'Privacy', allergens: 'Allergens', lunch: 'Lunch to share', discover: 'Discover', cookies: 'Manage cookies' },
-  es: { legal: 'Aviso legal', privacy: 'Privacidad', allergens: 'Alérgenos', lunch: 'Almuerzo para compartir', discover: 'Descubrir', cookies: 'Gestionar cookies' },
+  fr: { legal: 'Mentions légales', privacy: 'Confidentialité', allergens: 'Allergènes', lunch: 'Déjeuner à emporter', discover: 'Découvrir', cookies: 'Gérer les cookies' },
+  en: { legal: 'Legal notice', privacy: 'Privacy', allergens: 'Allergens', lunch: 'Takeaway lunch', discover: 'Discover', cookies: 'Manage cookies' },
+  es: { legal: 'Aviso legal', privacy: 'Privacidad', allergens: 'Alérgenos', lunch: 'Almuerzo para llevar', discover: 'Descubrir', cookies: 'Gestionar cookies' },
 };
 
 export default function SiteFooter({ lang }: { lang: 'fr' | 'en' | 'es' }) {

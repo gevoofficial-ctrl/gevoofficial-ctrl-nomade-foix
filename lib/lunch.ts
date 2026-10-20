@@ -34,8 +34,8 @@ export function lunchKind(dish: Pick<Dish,'category'>): 'main'|'drink'|null {
 export function lunchAvailable(dish:Dish) {
   return dish.available && dish.lunchIncluded && Number.isSafeInteger(dish.lunchPriceCents) && (dish.lunchPriceCents ?? 0) > 0 && lunchKind(dish) !== null;
 }
-/** The special main-course price applies only once the fifth main is selected. */
-export function hasLunchSpecialPrice(mainCount:number) { return mainCount > 4; }
+/** The special price applies to every main once four mains are selected. */
+export function hasLunchSpecialPrice(mainCount:number) { return mainCount >= 4; }
 export function lunchLinePrice(dish:Dish, kind:'main'|'drink', mainCount:number) {
   const price = kind === 'main' && hasLunchSpecialPrice(mainCount) ? dish.lunchPriceCents : dish.regularPriceCents;
   return Number.isSafeInteger(price) && (price ?? 0) > 0 ? price : null;

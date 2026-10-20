@@ -82,7 +82,7 @@ export function validateDish(input: unknown): Dish {
   if (lunchPriceCents !== null && (!Number.isSafeInteger(lunchPriceCents) || (lunchPriceCents as number) <= 0 || (lunchPriceCents as number) > 1000000)) throw new Error('Invalid Déjeuner price');
   if (typeof d.lunchIncluded !== 'boolean') throw new Error('Invalid Déjeuner flag');
   if (d.lunchIncluded && !['plats','boissons'].includes(category.toLocaleLowerCase('fr'))) throw new Error('Déjeuner: utilisez la catégorie Plats ou Boissons');
-  if (d.lunchIncluded && lunchPriceCents === null) throw new Error('A special price is required for Déjeuner à partager');
+  if (d.lunchIncluded && lunchPriceCents === null) throw new Error('A special price is required for Déjeuner à emporter');
   return {
     id: typeof d.id === 'string' && /^[a-f0-9-]{36}$/.test(d.id) ? d.id : crypto.randomUUID(),
     category, translations, imageUrl,

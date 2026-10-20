@@ -50,7 +50,7 @@ Optional overrides are `NOMADE_SMTP_HOST`, `NOMADE_SMTP_PORT`, `NOMADE_SMTP_SECU
 `NOMADE_RESERVATIONS_TO`. The password remains on the server, never in Git. Until it is
 configured, the form offers a phone fallback and refuses submissions.
 
-## Déjeuner à partager (local integration)
+## Déjeuner à emporter (local integration)
 
 The `/fr/dejeuner`, `/en/dejeuner` and `/es/dejeuner` pages use the same menu and
 `/admin` editor. Use category `Plats` for mains or `Boissons` for drinks, enable
@@ -61,8 +61,8 @@ in the menu editor; their photos are illustrative and prices are fictitious.
 
 Same-day submission opens 09:30–11:30 Europe/Paris on weekdays. Future weekday
 preorders remain possible outside this window. Pickup is 11:40–14:00 every ten
-minutes. One to four mains use each item's normal price; from five mains the
-special price applies to the mains. Drinks always use their normal price. Until a
+minutes. One to three mains use each item's normal price; from four mains the
+special price applies to every main. Drinks always use their normal price. Until a
 normal price is set in the administration, the affected selection cannot be sent.
 No online payment.
 
