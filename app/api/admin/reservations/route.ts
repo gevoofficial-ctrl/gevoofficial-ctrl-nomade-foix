@@ -24,13 +24,13 @@ function token() {
 async function readUpstream(response: Response) {
   const text = await response.text();
   try { return JSON.parse(text) as unknown; }
-  catch { throw new Error('Invalid response from reservations service'); }
+  catch { throw new Error('Réponse du service des réservations non valide'); }
 }
 
 export async function GET(request: NextRequest) {
   if (!authorized(request)) return json({ error:'Non autorisé' }, { status:401 });
   const serverToken = token();
-  if (!serverToken) return json({ error:'NOMADE_RESERVATIONS_TOKEN is not configured' }, { status:503 });
+  if (!serverToken) return json({ error:'NOMADE_RESERVATIONS_TOKEN n’est pas configuré sur le serveur' }, { status:503 });
 
   try {
     const url = new URL(webhook);
@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
   if (Number(request.headers.get('content-length') || 0) > 8192) return json({ error:'Requête trop volumineuse' }, { status:413 });
 
   const serverToken = token();
-  if (!serverToken) return json({ error:'NOMADE_RESERVATIONS_TOKEN is not configured' }, { status:503 });
+  if (!serverToken) return json({ error:'NOMADE_RESERVATIONS_TOKEN n’est pas configuré sur le serveur' }, { status:503 });
   const raw = await request.text().catch(() => '');
   if (raw.length > 8192) return json({ error:'Requête trop volumineuse' }, { status:413 });
   const body = (() => { try { return JSON.parse(raw); } catch { return null; } })();

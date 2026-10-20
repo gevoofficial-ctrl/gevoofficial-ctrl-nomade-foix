@@ -5,15 +5,15 @@ import { readMenu, sortedMenu, updateMenu, validateDish } from '../../../../lib/
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 export async function GET(request: NextRequest) {
-  if (!authorized(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!authorized(request)) return NextResponse.json({ error: 'Connexion requise' }, { status: 401 });
   return NextResponse.json(sortedMenu(await readMenu()), { headers: { 'Cache-Control': 'no-store' } });
 }
 export async function POST(request: NextRequest) {
-  if (!authorized(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  if (!sameOrigin(request)) return NextResponse.json({ error: 'Invalid origin' }, { status: 403 });
+  if (!authorized(request)) return NextResponse.json({ error: 'Connexion requise' }, { status: 401 });
+  if (!sameOrigin(request)) return NextResponse.json({ error: 'Origine non valide' }, { status: 403 });
   try {
     const body = await request.json();
-    if (JSON.stringify(body).length > 12000) return NextResponse.json({ error: 'Dish too large' }, { status: 413 });
+    if (JSON.stringify(body).length > 12000) return NextResponse.json({ error: 'Le contenu de la position est trop volumineux' }, { status: 413 });
     const dish = validateDish({ ...body, id: undefined });
     await updateMenu(items => [...items, dish]);
     return NextResponse.json(dish, { status: 201 });

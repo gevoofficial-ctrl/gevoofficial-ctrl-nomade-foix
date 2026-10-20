@@ -124,7 +124,7 @@ async function requestJson(url:string, options?:RequestInit) {
     ...options,
     cache:'no-store',
     headers:{ ...(options?.body ? {'Content-Type':'application/json'} : {}), ...options?.headers },
-  });
+  }).catch(() => { throw new Error('Connexion impossible. Vérifiez votre connexion et réessayez.'); });
   const body = await response.json().catch(() => ({}));
   if (!response.ok) throw new Error(body.error || 'La requête a échoué');
   return body;
@@ -299,7 +299,7 @@ export default function ReservationsDashboard() {
     setAuth('locked'); setReservations([]); setClosures([]);
   }
 
-  return <main className="reservationsPage">
+  return <main className="reservationsPage" lang="fr">
     <header className="reservationsHeader">
       <div><span className="reservationsEyebrow">NOMADE · ADMINISTRATION</span><h1>Réservations</h1></div>
       {auth === 'ready' && <nav><Link href="/admin">La carte</Link><button type="button" onClick={logout}>Déconnexion</button></nav>}

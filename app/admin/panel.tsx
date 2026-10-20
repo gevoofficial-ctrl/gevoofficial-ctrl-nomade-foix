@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
-import type { Dish } from '../../lib/menu';
+import type { Dish, Lang } from '../../lib/menu';
 import './panel.css';
 
 const blank = (): Dish => ({
@@ -15,9 +15,9 @@ const blank = (): Dish => ({
   imageUrl:'', available:true, signature:false, order:0, regularPriceCents:null, lunchIncluded:false, lunchPriceCents:null,
 });
 const request = async (url: string, options?: RequestInit) => {
-  const response = await fetch(url, { ...options, cache:'no-store', headers:{'Content-Type':'application/json',...options?.headers} });
-  const body = await response.json();
-  if (!response.ok) throw new Error(body.error || 'Request failed');
+  const response = await fetch(url, { ...options, cache:'no-store', headers:{'Content-Type':'application/json',...options?.headers} }).catch(() => { throw new Error('Connexion impossible. Vérifiez votre connexion et réessayez.'); });
+  const body = await response.json().catch(() => { throw new Error('Réponse du serveur non valide. Réessayez.'); });
+  if (!response.ok) throw new Error(body.error || 'La requête a échoué. Réessayez.');
   return body;
 };
 
@@ -63,37 +63,39 @@ export default function AdminPanel() {
     const normalized = value.replace(',', '.').trim();
     set({ [field]: normalized === '' ? null : Math.round(Number(normalized) * 100) } as Partial<Dish>);
   };
-  const editFrench = (field: 'name'|'description'|'ingredients', value: string) =>
-    setDraft(current => current && ({...current,translations:{...current.translations,fr:{...current.translations.fr,[field]:value}}}));
+  const editTranslation = (lang:Lang, field: 'name'|'description'|'ingredients', value: string) =>
+    setDraft(current => current && ({...current,translations:{...current.translations,[lang]:{...current.translations[lang],[field]:value}}}));
+  const categories = [...new Set(['Plats','Boissons',...items.map(item => item.category),...(draft ? [draft.category] : [])])];
   async function upload(file: File) {
     setBusy(true); setMessage('Téléchargement…');
     try {
       const form = new FormData(); form.set('file',file);
-      const res = await fetch('/api/admin/media',{method:'POST',body:form});
-      const result = await res.json();
-      if (!res.ok) throw new Error(result.error || 'Upload failed');
-      set({imageUrl:result.url}); setMessage('Photo envoyée. Enregistrez le plat pour confirmer.');
+      const res = await fetch('/api/admin/media',{method:'POST',body:form}).catch(() => { throw new Error('Connexion impossible. Réessayez l’envoi de la photo.'); });
+      const result = await res.json().catch(() => { throw new Error('Réponse du serveur non valide. Réessayez.'); });
+      if (!res.ok) throw new Error(result.error || 'L’envoi de la photo a échoué.');
+      set({imageUrl:result.url}); setMessage('Photo envoyée. Enregistrez la position pour confirmer.');
     } catch(e) { setMessage((e as Error).message); } finally { setBusy(false); }
   }
 
-  return <main className="adminPanel">
+  return <main className="adminPanel" lang="fr">
     <header><h1>NOMADE <span>· La carte</span></h1>{status === 'ready' && <button type="button" onClick={async()=>{await request('/api/admin/session',{method:'DELETE'});setStatus('locked');setItems([]);setDraft(null)}}>Déconnexion</button>}</header>
     {message && <p role="status" className="adminMessage">{message}</p>}
     {status === 'loading' && <p>Chargement…</p>}
     {status === 'unconfigured' && <p>Configurez NOMADE_ADMIN_PASSWORD et NOMADE_ADMIN_SECRET (32 caractères minimum) dans les variables d’environnement du serveur.</p>}
     {status === 'locked' && <form className="adminLogin" onSubmit={login}><h2>Connexion</h2><label>Mot de passe<input type="password" autoComplete="current-password" value={password} onChange={e=>setPassword(e.target.value)} required /></label><button disabled={busy}>Se connecter</button></form>}
     {status === 'ready' && <>
-      <div className="adminToolbar"><p>{items.length} plat{items.length !== 1 && 's'}</p><Link href="/admin/reservations">Voir les réservations</Link><button onClick={()=>{setDraft(blank());setMessage('')}}>+ Ajouter un plat</button><a href="/fr/carte" target="_blank" rel="noreferrer">Voir la carte ↗</a></div>
+      <div className="adminToolbar"><p>{items.length} position{items.length !== 1 && 's'}</p><Link href="/admin/reservations">Voir les réservations</Link><button onClick={()=>{setDraft(blank());setMessage('')}}>+ Ajouter une position</button><a href="/fr/carte" target="_blank" rel="noreferrer">Voir la carte ↗</a></div>
       <div className="adminList">{items.map(d => <article key={d.id}><div><strong>{d.translations.fr.name}</strong><small>{d.category} · {d.available?'Disponible':'Indisponible'} {d.signature && '· ★ Accueil'} {d.lunchIncluded && `· Déjeuner ${((d.lunchPriceCents || 0)/100).toFixed(2)} €`}</small></div><button onClick={()=>{setDraft(structuredClone(d));setMessage('')}}>Modifier</button></article>)}</div>
       {draft && <form className="adminEditor" onSubmit={save}>
-        <div className="adminEditorTop"><h2>{draft.id?'Modifier le plat':'Ajouter un plat'}</h2><button type="button" onClick={()=>setDraft(null)}>Fermer ×</button></div>
+        <div className="adminEditorTop"><h2>{draft.id?'Modifier la position':'Ajouter une position'}</h2><button type="button" onClick={()=>setDraft(null)}>Fermer ×</button></div>
         <p className="muted">La carte publique affiche le nom, la description et la composition. La photo est utilisée sur l’accueil et dans Déjeuner à emporter. Les prix normaux ne sont pas affichés sur la carte publique.</p>
-        <div className="adminFields"><label>Catégorie<input list="lunch-categories" value={draft.category} maxLength={80} onChange={e=>set({category:e.target.value})} required /><datalist id="lunch-categories"><option value="Plats"/><option value="Boissons"/></datalist></label><label>Ordre d’affichage<input type="number" value={draft.order} onChange={e=>set({order:Number(e.target.value)})} /></label><label>Prix normal (€)<PriceInput key={`${draft.id}-regular`} price={draft.regularPriceCents} onPrice={value=>setPrice('regularPriceCents',value)} /></label></div>
-        <fieldset><legend>FR · plat</legend>
-          <label>Nom<input value={draft.translations.fr.name} onChange={e=>editFrench('name',e.target.value)} maxLength={120} required /></label>
-          <label>Description<textarea value={draft.translations.fr.description} onChange={e=>editFrench('description',e.target.value)} maxLength={500} rows={2} /></label>
-          <label>Composition<textarea value={draft.translations.fr.ingredients} onChange={e=>editFrench('ingredients',e.target.value)} maxLength={500} rows={2} /></label>
-        </fieldset>
+        <div className="adminFields"><label>Catégorie<select value={draft.category} onChange={e=>set({category:e.target.value})} required aria-describedby="category-help">{categories.map(category=><option key={category} value={category}>{category}</option>)}</select><small id="category-help">Déjeuner : « Plats » pour les plats, « Boissons » pour les boissons.</small></label><label>Ordre d’affichage<input type="number" value={draft.order} onChange={e=>set({order:Number(e.target.value)})} /></label><label>Prix normal (€)<PriceInput key={`${draft.id}-regular`} price={draft.regularPriceCents} onPrice={value=>setPrice('regularPriceCents',value)} /></label></div>
+        <p className="muted">Renseignez les traductions pour chaque langue du site. Si une traduction est vide, le texte français est affiché.</p>
+        {(['fr','en','es'] as const).map(lang=><fieldset key={lang}><legend>{{fr:'Français',en:'Anglais',es:'Espagnol'}[lang]}</legend>
+          <label>Nom<input lang={lang} value={draft.translations[lang].name} onChange={e=>editTranslation(lang,'name',e.target.value)} maxLength={120} required={lang==='fr'} /></label>
+          <label>Description<textarea lang={lang} value={draft.translations[lang].description} onChange={e=>editTranslation(lang,'description',e.target.value)} maxLength={500} rows={2} /></label>
+          <label>Composition<textarea lang={lang} value={draft.translations[lang].ingredients} onChange={e=>editTranslation(lang,'ingredients',e.target.value)} maxLength={500} rows={2} /></label>
+        </fieldset>)}
         <div className="adminChecks"><label><input type="checkbox" checked={draft.available} onChange={e=>set({available:e.target.checked})} />Disponible</label><label><input type="checkbox" checked={draft.signature} onChange={e=>set({signature:e.target.checked})} />★ Mettre en avant sur l’accueil</label></div>
         <fieldset className="lunchEditor"><legend>Déjeuner à emporter</legend><label className="adminInlineCheck"><input type="checkbox" checked={draft.lunchIncluded} onChange={e=>set({lunchIncluded:e.target.checked})} />Inclure dans le programme</label><label>Prix spécial (€)<PriceInput key={`${draft.id}-lunch`} price={draft.lunchPriceCents} required={draft.lunchIncluded} onPrice={value=>setPrice('lunchPriceCents',value)} /></label><p className="muted">Le prix spécial des plats s’applique à tous les plats dès 4 plats. Celui des boissons s’applique à toutes les boissons dès 4 boissons. Les deux catégories sont calculées séparément. Utilisez « Plats » pour les plats principaux et « Boissons » pour les boissons.</p></fieldset>
         {<label>Photo (accueil ou Déjeuner · JPEG, PNG, WebP · 8 Mo)<input type="file" accept="image/jpeg,image/png,image/webp" onChange={e=>e.target.files?.[0] && upload(e.target.files[0])} /><input aria-label="URL de la photo" value={draft.imageUrl} onChange={e=>set({imageUrl:e.target.value})} placeholder="URL HTTPS ou photo téléchargée" /></label>}

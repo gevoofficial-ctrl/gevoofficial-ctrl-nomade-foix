@@ -23,7 +23,7 @@ export const mediaDirectory = () => path.join(path.dirname(file()), 'media');
 export async function readMenu(): Promise<Dish[]> {
   try {
     const data: unknown = JSON.parse(await fs.readFile(file(), 'utf8'));
-    if (!Array.isArray(data)) throw new Error('Invalid menu data');
+    if (!Array.isArray(data)) throw new Error('Les données de la carte ne sont pas valides.');
     return data.map(migrateDish);
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === 'ENOENT') return [];
@@ -58,31 +58,31 @@ function migrateDish(input: unknown): Dish {
 }
 
 export function validateDish(input: unknown): Dish {
-  if (!input || typeof input !== 'object') throw new Error('Invalid dish');
+  if (!input || typeof input !== 'object') throw new Error('La position n’est pas valide.');
   const d = input as Record<string, unknown>;
   const str = (x: unknown, max: number) => typeof x === 'string' && x.length <= max ? x.trim() : null;
   const category = str(d.category, 80);
-  if (!category) throw new Error('Category is required');
+  if (!category) throw new Error('La catégorie est obligatoire.');
   const translations = {} as Record<Lang, Translation>;
   for (const lang of ['fr','en','es'] as const) {
     const t = d.translations && typeof d.translations === 'object'
       ? (d.translations as Record<string, unknown>)[lang] as Record<string, unknown> | undefined : undefined;
     const name = str(t?.name, 120), description = str(t?.description, 500), ingredients = str(t?.ingredients, 500);
-    if (name === null || description === null || ingredients === null || (lang === 'fr' && !name)) throw new Error('French name is required; dish text must be valid');
+    if (name === null || description === null || ingredients === null || (lang === 'fr' && !name)) throw new Error('Le nom français est obligatoire. Vérifiez la longueur et le contenu des textes.');
     translations[lang] = { name, description, ingredients };
   }
   const imageUrl = str(d.imageUrl, 500);
-  if (imageUrl === null) throw new Error('Invalid image URL');
-  if (imageUrl && !(/^\/images\/(ravioli|magret|cocktails)\.jpg$/.test(imageUrl) || /^\/api\/menu\/media\/[a-f0-9-]{36}\.(jpg|png|webp)$/.test(imageUrl) || /^https:\/\/[\w.-]+(?:\/[\w\-./%?=&]+)?$/.test(imageUrl))) throw new Error('Image URL must be HTTPS or an uploaded file');
-  if (!Number.isSafeInteger(d.order) || Math.abs(d.order as number) > 100000) throw new Error('Invalid order');
-  if (typeof d.available !== 'boolean' || typeof d.signature !== 'boolean') throw new Error('Invalid flags');
+  if (imageUrl === null) throw new Error('L’adresse de la photo n’est pas valide.');
+  if (imageUrl && !(/^\/images\/(ravioli|magret|cocktails)\.jpg$/.test(imageUrl) || /^\/api\/menu\/media\/[a-f0-9-]{36}\.(jpg|png|webp)$/.test(imageUrl) || /^https:\/\/[\w.-]+(?:\/[\w\-./%?=&]+)?$/.test(imageUrl))) throw new Error('Utilisez une adresse HTTPS ou une photo téléchargée.');
+  if (!Number.isSafeInteger(d.order) || Math.abs(d.order as number) > 100000) throw new Error('L’ordre d’affichage n’est pas valide.');
+  if (typeof d.available !== 'boolean' || typeof d.signature !== 'boolean') throw new Error('Les options de disponibilité ou de mise en avant ne sont pas valides.');
   const regularPriceCents = d.regularPriceCents === null || d.regularPriceCents === undefined ? null : d.regularPriceCents;
   const lunchPriceCents = d.lunchPriceCents === null || d.lunchPriceCents === undefined ? null : d.lunchPriceCents;
-  if (regularPriceCents !== null && (!Number.isSafeInteger(regularPriceCents) || (regularPriceCents as number) <= 0 || (regularPriceCents as number) > 1000000)) throw new Error('Invalid regular price');
-  if (lunchPriceCents !== null && (!Number.isSafeInteger(lunchPriceCents) || (lunchPriceCents as number) <= 0 || (lunchPriceCents as number) > 1000000)) throw new Error('Invalid Déjeuner price');
-  if (typeof d.lunchIncluded !== 'boolean') throw new Error('Invalid Déjeuner flag');
+  if (regularPriceCents !== null && (!Number.isSafeInteger(regularPriceCents) || (regularPriceCents as number) <= 0 || (regularPriceCents as number) > 1000000)) throw new Error('Le prix normal doit être compris entre 0,01 € et 10 000 €.');
+  if (lunchPriceCents !== null && (!Number.isSafeInteger(lunchPriceCents) || (lunchPriceCents as number) <= 0 || (lunchPriceCents as number) > 1000000)) throw new Error('Le prix spécial doit être compris entre 0,01 € et 10 000 €.');
+  if (typeof d.lunchIncluded !== 'boolean') throw new Error('L’option Déjeuner à emporter n’est pas valide.');
   if (d.lunchIncluded && !['plats','boissons'].includes(category.toLocaleLowerCase('fr'))) throw new Error('Déjeuner: utilisez la catégorie Plats ou Boissons');
-  if (d.lunchIncluded && lunchPriceCents === null) throw new Error('A special price is required for Déjeuner à emporter');
+  if (d.lunchIncluded && lunchPriceCents === null) throw new Error('Un prix spécial est obligatoire pour Déjeuner à emporter.');
   return {
     id: typeof d.id === 'string' && /^[a-f0-9-]{36}$/.test(d.id) ? d.id : crypto.randomUUID(),
     category, translations, imageUrl,
@@ -104,7 +104,7 @@ export async function updateMenu(change: (items: Dish[]) => Dish[]): Promise<Dis
       await new Promise(resolve => setTimeout(resolve, 50));
     }
   }
-  if (!lock) throw new Error('Menu is busy. Please retry.');
+  if (!lock) throw new Error('La carte est en cours de modification. Réessayez.');
   try {
     const items = change(await readMenu());
     const temp = target + '.' + crypto.randomUUID() + '.tmp';
