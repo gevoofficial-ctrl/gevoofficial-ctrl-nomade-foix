@@ -103,6 +103,7 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
   const videoFallback=videoFallbackCopy[lang];
   const navLinks = ['#house', '#menu', '#events', '#contact'];
   return <main lang={lang}>
+    <link rel="preload" as="image" href="/video/nomade-hero-poster.jpg" fetchPriority="high" />
     <header className="header"><Link className="logo" href={`/${lang}#top`} aria-label="Nomade"><Image src="/nomade-logo-light.svg" alt="NOMADE" width={2933} height={1000} priority /></Link><nav>{t.nav.map((n,i)=><a key={n} href={navLinks[i]}>{n}</a>)}<Link href={`/${lang}/dejeuner`}>{t.lunch}</Link></nav><div className="tools"><div className="langs">{(['fr','en','es'] as const).map(l=><Link key={l} className={lang===l?'active':''} href={`/${l}`}>{l.toUpperCase()}</Link>)}</div></div></header>
     <details className="mobileMenu">
       <summary aria-label="Menu"><span></span><span></span><span></span></summary>
