@@ -66,7 +66,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang={lang}>
       <head>
-        <link rel="preload" as="font" href="/fonts/playfair-display-v40-latin.woff2" type="font/woff2" crossOrigin="anonymous" />
+        <link rel="preload" as="font" href="/fonts/playfair-display-v40-headings.woff2" type="font/woff2" crossOrigin="anonymous" />
         <link rel="preload" as="font" href="/fonts/dm-sans-v17-latin.woff2" type="font/woff2" crossOrigin="anonymous" />
         <meta name="msvalidate.01" content="6765DEE9694A7BEA83306F67874B81D8" />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(restaurantStructuredData).replace(/</g, '\\u003c') }} />

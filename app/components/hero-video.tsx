@@ -25,8 +25,14 @@ export default function HeroVideo({ fallback }: HeroVideoProps) {
   useEffect(() => {
     if (!window.matchMedia('(max-width: 800px)').matches) return;
 
-    const timeout = window.setTimeout(() => setLoadMobileVideo(true), 2500);
-    return () => window.clearTimeout(timeout);
+    // Let the visible headings finish loading before a multi-megabyte video
+    // competes with their fonts on a slow mobile connection. The poster stays.
+    let active = true;
+    let timeout: number | undefined;
+    void document.fonts.ready.then(() => {
+      if (active) timeout = window.setTimeout(() => setLoadMobileVideo(true), 2500);
+    });
+    return () => { active = false; window.clearTimeout(timeout); };
   }, []);
 
   useEffect(() => {
