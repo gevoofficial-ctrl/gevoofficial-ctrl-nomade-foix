@@ -7,6 +7,8 @@ import { menuFile, readMenu, sortedMenu, type Dish, type Lang, localized } from 
 import { allowedDate, euros, lunchAvailable, lunchKind, lunchLinePrice, pickupSlots } from '../../../lib/lunch';
 import { mailConfiguration, mailTransport } from '../../../lib/mail';
 import { lunchReservationClosedDates, reservationClosedDates } from '../../../lib/reservation-availability';
+import { customerLunchMail, lunchLanguage, lunchMessages, type LunchLanguage } from '../../../lib/lunch-localization';
+import { checkLunchRateLimit } from '../../../lib/lunch-rate-limit';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -43,17 +45,13 @@ async function withState<T>(change:(state:State)=>T):Promise<T> {
   } finally { await lock.close(); await fs.rm(`${target}.lock`,{force:true}); }
 }
 
-function replay(record:OrderRecord, fingerprint:string) {
-  if (record.fingerprint && record.fingerprint!==fingerprint) return NextResponse.json({error:'Cette tentative correspond à une autre commande.',code:'KEY_MISMATCH',orderNumber:record.orderNumber},{status:409});
+function replay(record:OrderRecord, fingerprint:string, lang:LunchLanguage) {
+  const t=lunchMessages[lang];
+  if (record.fingerprint && record.fingerprint!==fingerprint) return NextResponse.json({error:t.mismatch,code:'KEY_MISMATCH',orderNumber:record.orderNumber},{status:409});
   if (record.status==='accepted' || record.emailSent) return NextResponse.json({ok:true,orderNumber:record.orderNumber,confirmationEmailSent:record.confirmationEmailSent ?? true,duplicate:true});
   const pending=record.status==='sending' && Date.now()-Date.parse(record.createdAt)<120000;
   if (!pending && record.restaurantAccepted) return NextResponse.json({ok:true,orderNumber:record.orderNumber,confirmationEmailSent:false,duplicate:true});
-  return NextResponse.json({ok:false,pending,orderNumber:record.orderNumber,code:pending?'PENDING':'DELIVERY_UNCERTAIN',error:pending?'Envoi en cours…':`L’envoi de la commande ${record.orderNumber} nécessite une vérification. Appelez-nous au 07 45 26 28 23.`},{status:pending?202:409,headers:{'Cache-Control':'no-store','Retry-After':'2'}});
-}
-const escapeHtml=(value:string)=>value.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!));
-function confirmationHtml(firstName:string, orderNumber:string, date:string, time:string, lines:Line[], total:number, comment:string) {
-  const rows=lines.map(line=>`<tr><td style="padding:12px 0;border-bottom:1px solid #dfd5c5">${escapeHtml(line.dish.translations.fr.name)} × ${line.quantity}</td><td style="padding:12px 0;text-align:right;border-bottom:1px solid #dfd5c5">${euros(line.total)}</td></tr>`).join('');
-  return `<!doctype html><html lang="fr"><body style="margin:0;background:#f1eadf;color:#29241d;font-family:Arial,sans-serif"><table role="presentation" width="100%"><tr><td align="center" style="padding:32px 16px"><table role="presentation" width="100%" style="max-width:600px;background:#fffaf2"><tr><td style="padding:32px;background:#17140f;color:#e9e1d1"><p style="letter-spacing:5px;font-size:14px">NOMADE · FOIX</p><h1 style="font-family:Georgia,serif;font-size:34px;font-weight:normal">Déjeuner à emporter</h1><p>Votre commande ${orderNumber} est bien enregistrée.</p></td></tr><tr><td style="padding:32px"><p>Bonjour ${escapeHtml(firstName)},</p><p>Merci pour votre commande et pour votre choix de NOMADE. Vous trouverez ci-dessous le récapitulatif de votre commande.</p><p><strong>Retrait le ${escapeHtml(date)} à ${escapeHtml(time)}</strong><br>42 Rue des Chapeliers · 09000 Foix</p><table width="100%" style="border-collapse:collapse">${rows}<tr><td style="padding:18px 0"><strong>Total</strong></td><td style="text-align:right;font-size:24px">${euros(total)}</td></tr></table>${comment?`<p><strong>Commentaire</strong><br>${escapeHtml(comment).replace(/\n/g,'<br>')}</p>`:''}<p style="padding:16px;background:#f1eadf">Le règlement sera effectué sur place le jour du retrait.</p><p>Nous vous attendons avec plaisir chez NOMADE.<br>À très bientôt.</p></td></tr></table></td></tr></table></body></html>`;
+  return NextResponse.json({ok:false,pending,orderNumber:record.orderNumber,code:pending?'PENDING':'DELIVERY_UNCERTAIN',error:pending?t.pending:t.uncertain.replace('{order}',record.orderNumber)},{status:pending?202:409,headers:{'Cache-Control':'no-store','Retry-After':'2'}});
 }
 
 export async function GET(request:NextRequest) {
@@ -61,7 +59,7 @@ export async function GET(request:NextRequest) {
   const lang:Lang=requestedLang==='en'||requestedLang==='es'?requestedLang:'fr';
   let menu:Dish[], closedDates:string[];
   try { [menu,closedDates]=await Promise.all([readMenu(),lunchReservationClosedDates()]); }
-  catch { return NextResponse.json({error:'Availability is temporarily unavailable'},{status:503,headers:{'Cache-Control':'no-store'}}); }
+  catch { return NextResponse.json({error:lunchMessages[lang].availability},{status:503,headers:{'Cache-Control':'no-store'}}); }
   menu=sortedMenu(menu).filter(lunchAvailable);
   const item=(dish:Dish)=>{
     const text=localized(dish,lang);
@@ -71,30 +69,37 @@ export async function GET(request:NextRequest) {
 }
 
 export async function POST(request:NextRequest) {
-  if (!sameOrigin(request)) return NextResponse.json({error:'Invalid origin'},{status:403});
-  if (Number(request.headers.get('content-length')||0)>12000) return NextResponse.json({error:'Request too large'},{status:413});
+  let lang=lunchLanguage(request.nextUrl.searchParams.get('lang'));
+  let t=lunchMessages[lang];
+  if (!sameOrigin(request)) return NextResponse.json({error:t.origin},{status:403});
+  if (Number(request.headers.get('content-length')||0)>12000) return NextResponse.json({error:t.tooLarge},{status:413});
   const raw=await request.text().catch(()=>'');
-  if (Buffer.byteLength(raw,'utf8')>12000) return NextResponse.json({error:'Request too large'},{status:413});
+  if (Buffer.byteLength(raw,'utf8')>12000) return NextResponse.json({error:t.tooLarge},{status:413});
   let body:Record<string,unknown>;
   try { const value:unknown=JSON.parse(raw); if (!value || typeof value!=='object' || Array.isArray(value)) throw new Error(); body=value as Record<string,unknown>; }
-  catch { return NextResponse.json({error:'Requête invalide.'},{status:400}); }
-  if (body.website) return NextResponse.json({error:'Requête invalide.'},{status:400});
+  catch { return NextResponse.json({error:t.invalidRequest},{status:400}); }
+  lang=lunchLanguage(request.nextUrl.searchParams.get('lang') || body.lang);
+  t=lunchMessages[lang];
+  if (body.website) return NextResponse.json({error:t.invalidRequest},{status:400});
   const key=typeof body.idempotencyKey==='string'?body.idempotencyKey:'';
-  if (!/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(key)) return NextResponse.json({error:'Identifiant de tentative invalide.'},{status:400});
+  if (!/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(key)) return NextResponse.json({error:t.invalidAttempt},{status:400});
   const legacyName=typeof body.name==='string' && typeof body.firstName!=='string';
   const fingerprint=createHash('sha256').update(JSON.stringify(legacyName?[body.name,body.phone,body.email,body.date,body.time,body.comment??'',body.dishes,body.drinks]:[body.firstName,body.lastName,body.phone,body.email,body.date,body.time,body.comment??'',body.dishes,body.drinks])).digest('hex');
   try {
     // Resolve an earlier attempt before consulting mutable menu, clock or SMTP settings.
     const previous=await withState(state=>Object.hasOwn(state.idempotency,key)?state.idempotency[key]:null);
-    if (previous) return replay(previous,fingerprint);
+    if (previous) return replay(previous,fingerprint,lang);
     const text=(value:unknown,max:number)=>typeof value==='string' && value.length<=max && !/[\r\n\u0000]/.test(value)?value.trim():'';
     const firstName=text(legacyName?body.name:body.firstName,100), lastName=text(legacyName?'':body.lastName,100), phone=text(body.phone,25), email=text(body.email,254);
     const comment=body.comment===undefined?'':typeof body.comment==='string'?body.comment.replace(/\r\n?/g,'\n').trim():null;
     const date=body.date, time=body.time;
-    if (firstName.length<2 || (!legacyName&&lastName.length<2) || !/^[+0-9 ().-]{6,25}$/.test(phone) || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !allowedDate(date) || typeof time!=='string' || !pickupSlots.includes(time) || comment===null || comment.length>1000 || comment.includes('\u0000')) return NextResponse.json({error:'Veuillez vérifier les informations de commande.'},{status:400});
+    if (firstName.length<2 || (!legacyName&&lastName.length<2) || !/^[+0-9 ().-]{6,25}$/.test(phone) || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !allowedDate(date) || typeof time!=='string' || !pickupSlots.includes(time) || comment===null || comment.length>1000 || comment.includes('\u0000')) return NextResponse.json({error:t.invalidDetails},{status:400});
+    const ip=request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || request.headers.get('x-real-ip')?.trim() || 'unknown';
+    const limit=await checkLunchRateLimit(path.join(path.dirname(stateFile()),'dejeuner-rate-limit.json'),ip,email);
+    if(!limit.allowed)return NextResponse.json({error:t.rateLimited,code:'RATE_LIMITED'},{status:429,headers:{'Retry-After':String(limit.retryAfter),'Cache-Control':'no-store'}});
     try {
-      if ((await reservationClosedDates()).includes(date)) return NextResponse.json({code:'RESTAURANT_CLOSED',error:'Le restaurant est fermé à cette date.'},{status:409});
-    } catch { return NextResponse.json({error:'La disponibilité est momentanément indisponible. Réessayez plus tard ou appelez-nous au 07 45 26 28 23.'},{status:503}); }
+      if ((await reservationClosedDates()).includes(date)) return NextResponse.json({code:'RESTAURANT_CLOSED',error:t.closed},{status:409});
+    } catch { return NextResponse.json({error:t.availability},{status:503}); }
     const menu=new Map((await readMenu()).map(d=>[d.id,d]));
     const parseLines=(value:unknown,kind:'main'|'drink'):Line[]|null=>{
       if (!Array.isArray(value) || value.length>100) return null;
@@ -108,23 +113,23 @@ export async function POST(request:NextRequest) {
       return lines;
     };
     const dishes=parseLines(body.dishes,'main'), drinks=parseLines(body.drinks,'drink');
-    if (!dishes || !drinks || dishes.length===0) return NextResponse.json({error:'Ajoutez au moins un plat à votre commande.'},{status:400});
+    if (!dishes || !drinks || dishes.length===0) return NextResponse.json({error:t.addDish},{status:400});
     const mainCount=dishes.reduce((n,line)=>n+line.quantity,0), drinkCount=drinks.reduce((n,line)=>n+line.quantity,0);
     const priced=(lines:Line[],kind:'main'|'drink')=>lines.map(line=>{
       const unit=lunchLinePrice(line.dish,kind,mainCount,drinkCount);
       return unit===null?null:{...line,total:unit*line.quantity};
     });
     const pricedDishes=priced(dishes,'main'), pricedDrinks=priced(drinks,'drink');
-    if (pricedDishes.some(line=>line===null)||pricedDrinks.some(line=>line===null)) return NextResponse.json({error:'Les prix habituels de cette sélection seront bientôt disponibles. Ajoutez-les dans l’administration pour commander jusqu’à 3 articles.'},{status:400});
+    if (pricedDishes.some(line=>line===null)||pricedDrinks.some(line=>line===null)) return NextResponse.json({error:t.priceMissing},{status:400});
     const finalDishes=pricedDishes as Line[], finalDrinks=pricedDrinks as Line[];
     const config=mailConfiguration();
-    if (!config) return NextResponse.json({error:'Le service est temporairement indisponible. Appelez-nous au 07 45 26 28 23.'},{status:503});
+    if (!config) return NextResponse.json({error:t.unavailable},{status:503});
     const claim=await withState(state=>{
       if (Object.hasOwn(state.idempotency,key)) return {record:state.idempotency[key],fresh:false};
       const record:OrderRecord={orderNumber:`NO${String(state.nextNumber).padStart(4,'0')}`,fingerprint,createdAt:new Date().toISOString(),status:'sending',confirmationEmailSent:false};
       state.nextNumber++; state.idempotency[key]=record; return {record,fresh:true};
     });
-    if (!claim.fresh) return replay(claim.record,fingerprint);
+    if (!claim.fresh) return replay(claim.record,fingerprint,lang);
     const number=claim.record.orderNumber, all=[...finalDishes,...finalDrinks], total=all.reduce((n,line)=>n+line.total,0);
     const lineText=(lines:Line[])=>lines.length?lines.map(line=>`- ${line.dish.translations.fr.name} × ${line.quantity} — ${euros(line.total)}`).join('\n'):'- Aucun';
     const summary=`Date de retrait : ${date}\nHeure : ${time} (Europe/Paris)\n\nPlats :\n${lineText(finalDishes)}\n\nBoissons :\n${lineText(finalDrinks)}\n\n${comment?`Commentaire : ${comment}\n`:''}Total : ${euros(total)}\n\nLe règlement sera effectué sur place le jour du retrait.`;
@@ -137,7 +142,7 @@ export async function POST(request:NextRequest) {
       // Persist restaurant acceptance before the optional customer delivery.
       await withState(state=>{state.idempotency[key].restaurantAccepted=true;});
       try {
-        await transport.sendMail({from:config.from,to:email,subject:`Confirmation de votre commande ${number} — NOMADE`,text:`Bonjour ${firstName},\n\nVotre commande ${number} est bien enregistrée.\n\nMerci pour votre commande et pour votre choix de NOMADE.\nVous trouverez ci-dessous le récapitulatif de votre commande.\n\n${summary}\n\nNous vous attendons avec plaisir chez NOMADE.\nÀ très bientôt.`,html:confirmationHtml(firstName,number,date,time,all,total,comment)});
+        await transport.sendMail({from:config.from,to:email,...customerLunchMail({lang,firstName,orderNumber:number,date,time,dishes:finalDishes,drinks:finalDrinks,total,comment})});
         confirmationEmailSent=true;
       } catch { /* Accepted order remains authoritative; a retry must never resend either mail. */ }
       await withState(state=>{state.idempotency[key].status='accepted';state.idempotency[key].confirmationEmailSent=confirmationEmailSent;});
@@ -145,9 +150,9 @@ export async function POST(request:NextRequest) {
     } catch {
       await withState(state=>{state.idempotency[key].status=restaurantSent?'accepted':'uncertain';});
       if (restaurantSent) return NextResponse.json({ok:true,orderNumber:number,confirmationEmailSent:false});
-      return NextResponse.json({error:`L’envoi de la commande ${number} nécessite une vérification. Appelez-nous au 07 45 26 28 23.`,orderNumber:number,code:'DELIVERY_UNCERTAIN'},{status:502});
+      return NextResponse.json({error:t.uncertain.replace('{order}',number),orderNumber:number,code:'DELIVERY_UNCERTAIN'},{status:502});
     }
   } catch {
-    return NextResponse.json({error:'Service temporairement indisponible. Conservez votre tentative et réessayez.',code:'RETRY_SAME_KEY'},{status:503});
+    return NextResponse.json({error:t.retry,code:'RETRY_SAME_KEY'},{status:503});
   }
 }

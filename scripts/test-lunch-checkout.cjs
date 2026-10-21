@@ -1,0 +1,107 @@
+// Isolated checkout tests: temporary data, mocked availability and captured mail only.
+const fs=require('node:fs');
+const os=require('node:os');
+const path=require('node:path');
+const vm=require('node:vm');
+const crypto=require('node:crypto');
+const assert=require('node:assert/strict');
+const {test}=require('node:test');
+const {createRequire}=require('node:module');
+const root=path.resolve(__dirname,'..'), req=createRequire(path.join(root,'package.json'));
+const ts=req('typescript'),{NextRequest}=req('next/server');
+const id=n=>`00000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
+function fixture() {
+  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'nomade-checkout-'));
+  const main={id:id(1),category:'Plats',translations:{fr:{name:'Poulet',description:'Plat',ingredients:''},en:{name:'Chicken',description:'Main',ingredients:''},es:{name:'Pollo',description:'Plato',ingredients:''}},imageUrl:'',available:true,signature:false,order:0,regularPriceCents:1600,lunchIncluded:true,lunchPriceCents:1400};
+  const drink={...main,id:id(2),category:'Boissons',translations:{fr:{name:'Boisson',description:'',ingredients:''},en:{name:'Drink',description:'',ingredients:''},es:{name:'Bebida',description:'',ingredients:''}},regularPriceCents:500,lunchPriceCents:450};
+  const env={NODE_ENV:'production',NOMADE_MENU_FILE:path.join(dir,'menu.json'),NOMADE_LUNCH_STATE_FILE:path.join(dir,'orders.json'),NOMADE_SMTP_PASSWORD:'local-stub',NOMADE_RESERVATIONS_TOKEN:'local-stub'};
+  fs.writeFileSync(env.NOMADE_MENU_FILE,JSON.stringify([main,drink]));
+  const state={clock:'2026-10-21T08:00:00Z',closed:[],availability:true,sent:[],calls:0,failAt:0};
+  const cache=new Map();
+  class Clock extends Date {constructor(...args){super(...(args.length?args:[state.clock]));}static now(){return new Date(state.clock).getTime();}}
+  function load(file) {
+    if(cache.has(file))return cache.get(file).exports;
+    const mod={exports:{}};cache.set(file,mod);
+    const code=ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS,esModuleInterop:true}}).outputText;
+    const localRequire=name=>name==='nodemailer'?{createTransport:()=>({sendMail:async message=>{state.calls++;if(state.calls===state.failAt)throw new Error('simulated delivery failure');state.sent.push(message);}})}:name.startsWith('.')?load(path.resolve(path.dirname(file),`${name}.ts`)):req(name);
+    vm.runInNewContext(code,{require:localRequire,module:mod,exports:mod.exports,process:{env,cwd:()=>root},Date:Clock,Buffer,console,crypto:crypto.webcrypto,Intl,URL,AbortSignal,setTimeout,clearTimeout,fetch:async()=>({ok:state.availability,json:async()=>({ok:state.availability,closedDates:state.closed})})},{filename:file});
+    return mod.exports;
+  }
+  let api=load(path.join(root,'app/api/dejeuner/route.ts'));
+  const payload=(patch={})=>({idempotencyKey:crypto.randomUUID(),firstName:'Local <test>',lastName:'Checkout',phone:'0000000000',email:'guest@example.invalid',date:'2026-10-22',time:'12:00',comment:'<img src=x onerror=alert(1)>',dishes:[{id:id(1),quantity:4}],drinks:[{id:id(2),quantity:2}],...patch});
+  async function post(body,lang='fr',headers={}) {
+    const response=await api.POST(new NextRequest(`https://qa.invalid/api/dejeuner?lang=${lang}`,{method:'POST',headers:{origin:'https://qa.invalid',host:'qa.invalid','content-type':'application/json','x-forwarded-for':'192.0.2.1',...headers},body:typeof body==='string'?body:JSON.stringify(body)}));
+    return {status:response.status,headers:response.headers,body:await response.json()};
+  }
+  return {dir,env,state,payload,post,api:()=>api,reload:()=>{cache.clear();api=load(path.join(root,'app/api/dejeuner/route.ts'));}};
+}
+
+test('customer email, names, totals and errors follow FR/EN/ES; restaurant mail stays French',async()=>{
+  for(const [lang,title,name,subject,invalid] of [['fr','Déjeuner à emporter','Poulet','Confirmation de votre commande','Identifiant'],['en','Takeaway lunch','Chicken','Confirmation of your order','identifier'],['es','Almuerzo para llevar','Pollo','Confirmación de tu pedido','Identificador']]) {
+    const q=fixture(),result=await q.post(q.payload(),lang);
+    assert.equal(result.status,200);assert.equal(q.state.sent.length,2);
+    const [restaurant,customer]=q.state.sent;
+    assert.match(restaurant.subject,/Nouvelle commande/);assert.match(restaurant.text,/Poulet/);assert.match(restaurant.text,/66,00/);
+    assert.ok(customer.subject.includes(subject));assert.ok(customer.html.includes(`<html lang="${lang}">`));assert.ok(customer.html.includes(title));assert.ok(customer.text.includes(name));assert.ok(customer.text.includes('66'));
+    assert.ok(!customer.html.includes('<img src=x'));assert.ok(customer.html.includes('&lt;img'));assert.ok(customer.html.includes('Local &lt;test&gt;'));assert.ok(customer.html.includes('tel:+33745262823'));assert.ok(customer.html.includes('google.com/maps/'));
+    const bad=await q.post({},lang);assert.equal(bad.status,400);assert.ok(bad.body.error.includes(invalid));
+  }
+});
+
+test('all pricing boundaries remain correct in the server-generated restaurant email',async()=>{
+  for(const [m,d,total] of [[3,1,'53,00'],[4,2,'66,00'],[3,5,'70,50'],[4,4,'74,00']]) {
+    const q=fixture(),r=await q.post(q.payload({dishes:[{id:id(1),quantity:m}],drinks:[{id:id(2),quantity:d}]}),'en');
+    assert.equal(r.status,200);assert.ok(q.state.sent[0].text.includes(`Total : ${total} €`));
+  }
+});
+
+test('email limit persists across workers; existing attempts replay without resending at the limit',async()=>{
+  const q=fixture(),first=q.payload();assert.equal((await q.post(first,'en')).status,200);
+  for(let i=0;i<2;i++)assert.equal((await q.post(q.payload(),'en')).status,200);
+  q.reload();const denied=await q.post(q.payload(),'es');
+  assert.equal(denied.status,429);assert.equal(denied.body.code,'RATE_LIMITED');assert.match(denied.body.error,/Demasiadas/);assert.equal(denied.headers.get('retry-after'),'900');
+  const again=await q.post(first,'es');assert.equal(again.status,200);assert.equal(again.body.duplicate,true);assert.equal(q.state.sent.length,6);
+  const mismatch=await q.post({...first,time:'12:10'},'en');assert.equal(mismatch.status,409);assert.match(mismatch.body.error,/different order/);
+  q.state.clock='2026-10-21T08:15:00Z';assert.equal((await q.post(q.payload(),'en')).status,200);
+  const stored=fs.readFileSync(path.join(q.dir,'dejeuner-rate-limit.json'),'utf8');assert.ok(!stored.includes('guest@'));assert.ok(!stored.includes('192.0.2.1'));
+});
+
+test('per-IP limit permits ten distinct customers then blocks the eleventh',async()=>{
+  const q=fixture();for(let i=0;i<10;i++)assert.equal((await q.post(q.payload({email:`guest${i}@example.invalid`}))).status,200);
+  assert.equal((await q.post(q.payload({email:'other@example.invalid'}))).status,429);assert.equal(q.state.sent.length,20);
+});
+
+test('parallel new attempts cannot exceed the shared IP limit',async()=>{
+  const q=fixture();const replies=await Promise.all(Array.from({length:14},(_,i)=>q.post(q.payload({email:`parallel${i}@example.invalid`}),'en')));
+  assert.equal(replies.filter(r=>r.status===200).length,10);assert.equal(replies.filter(r=>r.status===429).length,4);assert.equal(q.state.sent.length,20);
+});
+
+test('parallel retries produce one order and two messages',async()=>{
+  const q=fixture(),body=q.payload();const replies=await Promise.all([q.post(body,'en'),q.post(body,'en')]);
+  assert.ok(replies.every(r=>[200,202].includes(r.status)));assert.equal(q.state.sent.length,2);
+  assert.equal(new Set(replies.map(r=>r.body.orderNumber)).size,1);
+});
+
+test('SMTP uncertainty and customer failure do not cause duplicate delivery on retry',async()=>{
+  const q=fixture(),body=q.payload();q.state.failAt=1;
+  const first=await q.post(body,'es');assert.equal(first.status,502);assert.match(first.body.error,/Es necesario/);
+  const replay=await q.post(body,'en');assert.equal(replay.status,409);assert.match(replay.body.error,/needs to be checked/);assert.equal(q.state.calls,1);
+  const p=fixture(),b=p.payload();p.state.failAt=2;
+  const partial=await p.post(b,'en');assert.equal(partial.status,200);assert.equal(partial.body.confirmationEmailSent,false);
+  const repeat=await p.post(b,'es');assert.equal(repeat.status,200);assert.equal(repeat.body.confirmationEmailSent,false);assert.equal(p.state.calls,2);
+});
+
+test('closed days, availability failure, invalid input and malformed JSON localize without mail',async()=>{
+  for(const [lang,closed,availability,invalid] of [['fr','fermé','disponibilité','Requête'],['en','closed','Availability','Invalid'],['es','cerrado','disponibilidad','Solicitud']]) {
+    const q=fixture();q.state.closed=['2026-10-22'];let r=await q.post(q.payload(),lang);assert.equal(r.status,409);assert.ok(r.body.error.includes(closed));
+    q.state.availability=false;r=await q.post(q.payload(),lang);assert.equal(r.status,503);assert.ok(r.body.error.includes(availability));
+    const g=await q.api().GET(new NextRequest(`https://qa.invalid/api/dejeuner?lang=${lang}`));assert.equal(g.status,503);assert.ok((await g.json()).error.includes(availability));
+    r=await q.post('{',lang);assert.equal(r.status,400);assert.ok(r.body.error.includes(invalid));assert.equal(q.state.sent.length,0);
+    r=await q.post({},lang,{origin:'https://other.invalid'});assert.equal(r.status,403);
+  }
+});
+
+test('legacy payload remains accepted; corrupt limiter fails closed without sending',async()=>{
+  const q=fixture(),body=q.payload();delete body.firstName;delete body.lastName;body.name='Legacy Guest';assert.equal((await q.post(body)).status,200);
+  fs.writeFileSync(path.join(q.dir,'dejeuner-rate-limit.json'),'{broken');const r=await q.post(q.payload(),'en');assert.equal(r.status,503);assert.match(r.body.error,/Keep this attempt/);assert.equal(q.state.sent.length,2);
+});
