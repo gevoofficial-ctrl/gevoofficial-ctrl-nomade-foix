@@ -16,7 +16,7 @@ function fixture() {
   const drink={...main,id:id(2),category:'Boissons',translations:{fr:{name:'Boisson',description:'',ingredients:''},en:{name:'Drink',description:'',ingredients:''},es:{name:'Bebida',description:'',ingredients:''}},regularPriceCents:500,lunchPriceCents:450};
   const env={NODE_ENV:'production',NOMADE_MENU_FILE:path.join(dir,'menu.json'),NOMADE_LUNCH_STATE_FILE:path.join(dir,'orders.json'),NOMADE_SMTP_PASSWORD:'local-stub',NOMADE_RESERVATIONS_TOKEN:'local-stub'};
   fs.writeFileSync(env.NOMADE_MENU_FILE,JSON.stringify([main,drink]));
-  const state={clock:'2026-10-21T08:00:00Z',closed:[],availability:true,sent:[],calls:0,failAt:0};
+  const state={clock:'2026-10-21T08:00:00Z',closed:[],availability:true,sent:[],calls:0,failAt:0,closureCalls:0,transientFailures:0,closureHook:null};
   const cache=new Map();
   class Clock extends Date {constructor(...args){super(...(args.length?args:[state.clock]));}static now(){return new Date(state.clock).getTime();}}
   function load(file) {
@@ -24,7 +24,12 @@ function fixture() {
     const mod={exports:{}};cache.set(file,mod);
     const code=ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS,esModuleInterop:true}}).outputText;
     const localRequire=name=>name==='nodemailer'?{createTransport:()=>({sendMail:async message=>{state.calls++;if(state.calls===state.failAt)throw new Error('simulated delivery failure');state.sent.push(message);}})}:name.startsWith('.')?load(path.resolve(path.dirname(file),`${name}.ts`)):req(name);
-    vm.runInNewContext(code,{require:localRequire,module:mod,exports:mod.exports,process:{env,cwd:()=>root},Date:Clock,Buffer,console,crypto:crypto.webcrypto,Intl,URL,AbortSignal,setTimeout,clearTimeout,fetch:async()=>({ok:state.availability,json:async()=>({ok:state.availability,closedDates:state.closed})})},{filename:file});
+    vm.runInNewContext(code,{require:localRequire,module:mod,exports:mod.exports,process:{env,cwd:()=>root},Date:Clock,Buffer,console,crypto:crypto.webcrypto,Intl,URL,AbortSignal,setTimeout,clearTimeout,fetch:async()=>{
+      state.closureCalls++;
+      if(state.closureHook)return state.closureHook();
+      const ok=state.availability&&state.transientFailures--<=0;
+      return {ok,status:ok?200:503,json:async()=>({ok,closedDates:state.closed})};
+    }},{filename:file});
     return mod.exports;
   }
   let api=load(path.join(root,'app/api/dejeuner/route.ts'));
@@ -33,7 +38,7 @@ function fixture() {
     const response=await api.POST(new NextRequest(`https://qa.invalid/api/dejeuner?lang=${lang}`,{method:'POST',headers:{origin:'https://qa.invalid',host:'qa.invalid','content-type':'application/json','x-forwarded-for':'192.0.2.1',...headers},body:typeof body==='string'?body:JSON.stringify(body)}));
     return {status:response.status,headers:response.headers,body:await response.json()};
   }
-  return {dir,env,state,payload,post,api:()=>api,reload:()=>{cache.clear();api=load(path.join(root,'app/api/dejeuner/route.ts'));}};
+  return {dir,env,state,payload,post,api:()=>api,availability:()=>load(path.join(root,'lib/reservation-availability.ts')),reload:()=>{cache.clear();api=load(path.join(root,'app/api/dejeuner/route.ts'));}};
 }
 
 test('customer email, names, totals and errors follow FR/EN/ES; restaurant mail stays French',async()=>{
@@ -104,4 +109,52 @@ test('closed days, availability failure, invalid input and malformed JSON locali
 test('legacy payload remains accepted; corrupt limiter fails closed without sending',async()=>{
   const q=fixture(),body=q.payload();delete body.firstName;delete body.lastName;body.name='Legacy Guest';assert.equal((await q.post(body)).status,200);
   fs.writeFileSync(path.join(q.dir,'dejeuner-rate-limit.json'),'{broken');const r=await q.post(q.payload(),'en');assert.equal(r.status,503);assert.match(r.body.error,/Keep this attempt/);assert.equal(q.state.sent.length,2);
+});
+
+test('menu-only endpoint stays available without contacting the failed calendar',async()=>{
+  const q=fixture();q.state.availability=false;
+  const response=await q.api().GET(new NextRequest('https://qa.invalid/api/dejeuner?lang=en&availability=separate'));
+  assert.equal(response.status,200);const body=await response.json();
+  assert.equal(body.availabilityReady,false);assert.equal(body.dishes[0].name,'Chicken');
+  assert.equal(body.drinks.length,1);assert.equal(body.pickupSlots[0],'12:00');
+  assert.equal(q.state.closureCalls,0);assert.equal(q.state.sent.length,0);
+});
+
+test('a transient availability error is retried once; parallel calendars share the request',async()=>{
+  const q=fixture();q.state.transientFailures=1;q.state.closed=['2026-10-22'];
+  const a=q.availability();
+  const dates=await Promise.all([a.lunchReservationClosedDates(),a.lunchReservationClosedDates()]);
+  assert.deepEqual(Array.from(dates[0]),['2026-10-22']);assert.equal(q.state.closureCalls,2);
+  dates[0].push('2026-10-23');
+  assert.deepEqual(Array.from(await a.lunchReservationClosedDates()),['2026-10-22']);
+  assert.equal(q.state.closureCalls,2);
+});
+
+test('expired cache fails closed instead of serving stale dates; checkout bypasses cached availability',async()=>{
+  const q=fixture(),a=q.availability();await a.lunchReservationClosedDates();
+  q.state.closed=['2026-10-22'];
+  const denied=await q.post(q.payload(),'en');assert.equal(denied.status,409);
+  assert.equal(q.state.closureCalls,2);assert.equal(q.state.sent.length,0);
+  q.state.clock='2026-10-21T08:00:21Z';q.state.availability=false;
+  await assert.rejects(a.lunchReservationClosedDates(),/Availability service failed/);
+  assert.equal(q.state.closureCalls,4);
+});
+
+test('admin invalidation prevents an older in-flight response from repopulating the cache',async()=>{
+  const q=fixture(),a=q.availability();let resolve;
+  q.state.closureHook=()=>new Promise(done=>{resolve=done;});
+  const old=a.lunchReservationClosedDates();
+  a.invalidateReservationAvailability();q.state.closureHook=null;q.state.closed=['2026-10-22'];
+  assert.deepEqual(Array.from(await a.lunchReservationClosedDates()),['2026-10-22']);
+  resolve({ok:true,json:async()=>({ok:true,closedDates:[]})});await old;
+  assert.deepEqual(Array.from(await a.lunchReservationClosedDates()),['2026-10-22']);
+  assert.equal(q.state.closureCalls,2);
+});
+
+test('authorization and invalid closure responses fail closed without retry or mail',async()=>{
+  for(const response of [{ok:false,status:403},{ok:true,json:async()=>({ok:false})},{ok:true,json:async()=>({ok:true,closedDates:null})}]) {
+    const q=fixture();q.state.closureHook=async()=>response;
+    await assert.rejects(q.availability().reservationClosedDates(),/Availability service failed/);
+    assert.equal(q.state.closureCalls,1);assert.equal(q.state.sent.length,0);
+  }
 });

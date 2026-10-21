@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { authorized, sameOrigin } from '../../../../lib/admin-auth';
+import { invalidateReservationAvailability } from '../../../../lib/reservation-availability';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -83,6 +84,7 @@ export async function POST(request: NextRequest) {
       if (!response.ok || !result || typeof result !== 'object' || ('ok' in result && result.ok === false)) {
         return json({ error:'La fermeture n’a pas été enregistrée' }, { status:502 });
       }
+      invalidateReservationAvailability();
       return json(result);
     } catch {
       console.error('Reservations closure update failed');

@@ -2,9 +2,11 @@ import type { Metadata } from 'next';
 import { headers } from 'next/headers';
 import { siteUrl } from '../lib/seo';
 import GoogleAnalytics from '../components/GoogleAnalytics';
+import './fonts.css';
 import './menu.css';
 import './reservation.css';
 import './dejeuner.css';
+import './site.css';
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -64,13 +66,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang={lang}>
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        {/* eslint-disable-next-line @next/next/no-page-custom-font */}
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=Playfair+Display:wght@400;500;600&display=swap" />
-        {/* The API route is deliberate: it keeps the stylesheet URL stable for staging caches. */}
-        {/* eslint-disable-next-line @next/next/no-css-tags */}
-        <link rel="stylesheet" href="/api/nomade-css?v=17" />
+        <link rel="preload" as="font" href="/fonts/playfair-display-v40-latin.woff2" type="font/woff2" crossOrigin="anonymous" />
+        <link rel="preload" as="font" href="/fonts/dm-sans-v17-latin.woff2" type="font/woff2" crossOrigin="anonymous" />
         <meta name="msvalidate.01" content="6765DEE9694A7BEA83306F67874B81D8" />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(restaurantStructuredData).replace(/</g, '\\u003c') }} />
       </head>

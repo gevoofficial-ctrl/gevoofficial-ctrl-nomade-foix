@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { mailConfiguration, mailTransport } from '../../../lib/mail';
 import { sameOrigin } from '../../../lib/admin-auth';
 import { isReservationTime } from '../../../lib/reservation-times';
-import { reservationClosedDates } from '../../../lib/reservation-availability';
+import { reservationClosedDates, lunchReservationClosedDates } from '../../../lib/reservation-availability';
 
 export const runtime = 'nodejs';
 const attempts = new Map<string, number[]>();
@@ -13,7 +13,7 @@ function todayInFoix() {
 }
 
 export async function GET() {
-  try { return NextResponse.json({ closedDates:await reservationClosedDates() }, { headers:{'Cache-Control':'no-store'} }); }
+  try { return NextResponse.json({ closedDates:await lunchReservationClosedDates() }, { headers:{'Cache-Control':'no-store'} }); }
   catch { return NextResponse.json({ error:'Availability is temporarily unavailable' }, { status:503 }); }
 }
 

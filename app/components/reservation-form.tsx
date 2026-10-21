@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import type { Lang } from '../../lib/menu';
+import { AvailabilityStatus, useReservationAvailability } from './reservation-availability';
 import { reservationTimeSlots } from '../../lib/reservation-times';
 
 const copy = {
@@ -36,20 +37,14 @@ export default function ReservationForm({lang}: {lang:Lang}) {
   const initial = parseIso(minimumDate);
   const [busy,setBusy] = useState(false);
   const [status,setStatus] = useState<'idle'|'sent'|'sentNoEmail'|'error'|'pastDate'|'closed'>('idle');
-  const [closedDates,setClosedDates] = useState<string[]>([]);
+  const availability=useReservationAvailability(lang);
+  const closedDates=availability.closedDates;
   const [date,setDate] = useState('');
   const [time,setTime] = useState('');
   const [dateOpen,setDateOpen] = useState(false);
   const [timeOpen,setTimeOpen] = useState(false);
   const [view,setView] = useState({year:initial.getFullYear(),month:initial.getMonth()});
   const pickerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    fetch('/api/reservations', { cache:'no-store' })
-      .then(response => response.ok ? response.json() : null)
-      .then(body => setClosedDates(Array.isArray(body?.closedDates) ? body.closedDates.filter((item:unknown) => typeof item === 'string') : []))
-      .catch(() => undefined);
-  }, []);
 
   useEffect(() => {
     const close = (event:PointerEvent) => {
@@ -62,6 +57,7 @@ export default function ReservationForm({lang}: {lang:Lang}) {
   }, []);
 
   const chooseDate = (value:string) => {
+    if(!availability.ready)return;
     if (value < minimumDate) { setStatus('pastDate'); return; }
     if (closedDates.includes(value)) { setStatus('closed'); return; }
     setDate(value); setStatus('idle'); setDateOpen(false);
@@ -76,7 +72,7 @@ export default function ReservationForm({lang}: {lang:Lang}) {
   const monthLabel = new Intl.DateTimeFormat(locale[lang],{month:'long',year:'numeric'}).format(new Date(view.year,view.month,1));
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (busy) return;
+    if (busy || !availability.ready) return;
     const form = event.currentTarget;
     const fields = new FormData(form);
     const selectedDate = String(fields.get('date') || '');
@@ -101,13 +97,14 @@ export default function ReservationForm({lang}: {lang:Lang}) {
   return <section id="reservation" className="reservation section printSection" aria-labelledby="reservation-title">
     <div><p className="eyebrow">05 / NOMADE</p><h2 id="reservation-title">{t.title}</h2><p className="lead">{t.intro}</p><p className="muted">{t.privacy} <Link href={`/${lang}/confidentialite`}>{t.policy}</Link></p></div>
     <form onSubmit={submit} className="reservationForm">
+      <AvailabilityStatus lang={lang} availability={availability}/>
       <div className="reservationFields" ref={pickerRef}>
         <label>{t.name}<input name="name" type="text" autoComplete="name" minLength={2} maxLength={100} required /></label>
         <label>{t.phone}<input name="phone" type="tel" autoComplete="tel" minLength={6} maxLength={25} required /></label>
         <label className="emailField">{t.email}<input name="email" type="email" autoComplete="email" maxLength={254} required /></label>
         <label className="pickerField">{t.date}
           <input name="date" type="hidden" value={date} required readOnly />
-          <button type="button" className={`pickerTrigger ${date?'hasValue':''}`} aria-haspopup="dialog" aria-expanded={dateOpen} onClick={()=>{setDateOpen(v=>!v);setTimeOpen(false)}}>{dateLabel}<span aria-hidden="true">⌄</span></button>
+          <button type="button" className={`pickerTrigger ${date?'hasValue':''}`} disabled={!availability.ready} aria-haspopup="dialog" aria-expanded={dateOpen} onClick={()=>{setDateOpen(v=>!v);setTimeOpen(false)}}>{dateLabel}<span aria-hidden="true">⌄</span></button>
           {dateOpen && <div className="datePicker pickerPopover" role="dialog" aria-label={t.chooseDate}>
             <div className="pickerHead"><button type="button" aria-label="Previous month" onClick={()=>changeMonth(-1)} disabled={view.year===initial.getFullYear()&&view.month===initial.getMonth()}>‹</button><strong>{monthLabel}</strong><button type="button" aria-label="Next month" onClick={()=>changeMonth(1)}>›</button></div>
             <div className="weekdays">{t.weekdays.map(day=><span key={day}>{day}</span>)}</div>
@@ -121,13 +118,13 @@ export default function ReservationForm({lang}: {lang:Lang}) {
         </label>
         <label className="pickerField">{t.time}
           <input name="time" type="hidden" value={time} required readOnly />
-          <button type="button" className={`pickerTrigger ${time?'hasValue':''}`} aria-haspopup="listbox" aria-expanded={timeOpen} onClick={()=>{setTimeOpen(v=>!v);setDateOpen(false)}}>{time || t.chooseTime}<span aria-hidden="true">⌄</span></button>
+          <button type="button" className={`pickerTrigger ${time?'hasValue':''}`} disabled={!availability.ready} aria-haspopup="listbox" aria-expanded={timeOpen} onClick={()=>{setTimeOpen(v=>!v);setDateOpen(false)}}>{time || t.chooseTime}<span aria-hidden="true">⌄</span></button>
           {timeOpen && <div className="timePicker pickerPopover" role="listbox" aria-label={t.chooseTime}>{reservationTimeSlots.map(slot=><button key={slot} type="button" role="option" aria-selected={slot===time} className={slot===time?'selected':''} onClick={()=>{setTime(slot);setTimeOpen(false)}}>{slot}</button>)}</div>}
         </label>
         <label>{t.guests}<input name="guests" type="number" min="1" max="50" defaultValue="2" required /></label>
       </div>
       <div className="reservationTrap" aria-hidden="true"><label>Website<input name="website" tabIndex={-1} autoComplete="off" /></label></div>
-      <button className="button" disabled={busy || !date || !time} type="submit">{busy?t.sending:t.send}</button>
+      <button className="button" disabled={busy || !availability.ready || !date || !time} type="submit">{busy?t.sending:t.send}</button>
       {status==='sent' && <p className="reservationStatus" role="status">{t.success}</p>}
       {status==='sentNoEmail' && <p className="reservationStatus" role="alert">{t.emailWarning}</p>}
       {status==='pastDate' && <p className="reservationStatus" role="alert">{t.pastDate}</p>}

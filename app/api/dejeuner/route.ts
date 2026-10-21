@@ -57,15 +57,16 @@ function replay(record:OrderRecord, fingerprint:string, lang:LunchLanguage) {
 export async function GET(request:NextRequest) {
   const requestedLang=request.nextUrl.searchParams.get('lang');
   const lang:Lang=requestedLang==='en'||requestedLang==='es'?requestedLang:'fr';
+  const menuOnly=request.nextUrl.searchParams.get('availability')==='separate';
   let menu:Dish[], closedDates:string[];
-  try { [menu,closedDates]=await Promise.all([readMenu(),lunchReservationClosedDates()]); }
+  try { [menu,closedDates]=await Promise.all([readMenu(),menuOnly?Promise.resolve([]):lunchReservationClosedDates()]); }
   catch { return NextResponse.json({error:lunchMessages[lang].availability},{status:503,headers:{'Cache-Control':'no-store'}}); }
   menu=sortedMenu(menu).filter(lunchAvailable);
   const item=(dish:Dish)=>{
     const text=localized(dish,lang);
     return {id:dish.id,name:text.name,description:text.description,imageUrl:dish.imageUrl,regularPriceCents:dish.regularPriceCents,lunchPriceCents:dish.lunchPriceCents};
   };
-  return NextResponse.json({dishes:menu.filter(d=>lunchKind(d)==='main').map(item),drinks:menu.filter(d=>lunchKind(d)==='drink').map(item),pickupSlots,closedDates},{headers:{'Cache-Control':'no-store'}});
+  return NextResponse.json({dishes:menu.filter(d=>lunchKind(d)==='main').map(item),drinks:menu.filter(d=>lunchKind(d)==='drink').map(item),pickupSlots,closedDates,availabilityReady:!menuOnly},{headers:{'Cache-Control':'no-store'}});
 }
 
 export async function POST(request:NextRequest) {
