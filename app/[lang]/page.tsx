@@ -2,6 +2,7 @@ import { ArrowDown, ArrowUpRight } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import HeroVideo from '../components/hero-video';
+import MobileMenu from '../components/mobile-menu';
 import ReservationForm from '../components/reservation-form';
 import { localized, readMenu, sortedMenu, type Dish } from '../../lib/menu';
 
@@ -105,10 +106,10 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
   return <main lang={lang}>
     <link rel="preload" as="image" href="/video/nomade-hero-poster.jpg" fetchPriority="high" />
     <header className="header"><Link className="logo" href={`/${lang}#top`} aria-label="Nomade"><Image src="/nomade-logo-light.svg" alt="NOMADE" width={2933} height={1000} priority /></Link><nav>{t.nav.map((n,i)=><a key={n} href={navLinks[i]}>{n}</a>)}<Link href={`/${lang}/dejeuner`}>{t.lunch}</Link></nav><div className="tools"><div className="langs">{(['fr','en','es'] as const).map(l=><Link key={l} className={lang===l?'active':''} href={`/${l}`}>{l.toUpperCase()}</Link>)}</div></div></header>
-    <details className="mobileMenu">
+    <MobileMenu>
       <summary aria-label="Menu"><span></span><span></span><span></span></summary>
       <div className="mobileNav">{t.nav.map((n,i)=><a key={n} href={navLinks[i]} aria-label={n}>{n}</a>)}<Link href={`/${lang}/dejeuner`} aria-label={t.lunch}>{t.lunch}</Link><div className="langs mobileLangs">{(['fr','en','es'] as const).map(l=><Link key={l} className={lang===l?'active':''} href={`/${l}`} aria-label={l.toUpperCase()}>{l.toUpperCase()}</Link>)}</div></div>
-    </details>
+    </MobileMenu>
 
     <section id="top" className="hero"><div className="heroMedia heroMediaVideo" aria-hidden="true"><HeroVideo fallback={videoFallback} /></div><div className="heroContent"><span>{t.heroKicker}</span><h1>NOMADE<span className="srOnly"> — {t.seoH1}</span></h1><p className="heroTitle">{t.heroTitle}</p><p className="heroSub">{t.heroSub}</p><a className="button" href="#reservation">{t.reserve}<ArrowUpRight size={16}/></a></div><a className="scroll" href="#house"><ArrowDown size={16}/>{t.discover}</a></section>
 
