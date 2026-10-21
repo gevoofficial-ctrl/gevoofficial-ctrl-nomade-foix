@@ -3,6 +3,8 @@ import { mailConfiguration, mailTransport } from '../../../lib/mail';
 import { sameOrigin } from '../../../lib/admin-auth';
 import { isReservationTime } from '../../../lib/reservation-times';
 import { reservationClosedDates, lunchReservationClosedDates } from '../../../lib/reservation-availability';
+import { isSiteLanguage } from '../../../lib/seo';
+import { reservationCopy, reservationConfirmation } from '../../../lib/reservation-localization';
 
 export const runtime = 'nodejs';
 const attempts = new Map<string, number[]>();
@@ -18,12 +20,16 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  if (!sameOrigin(request)) return NextResponse.json({ error:'Invalid origin' }, { status:403 });
-  if (Number(request.headers.get('content-length') || 0) > 4096) return NextResponse.json({ error:'Request too large' }, { status:413 });
+  const requested=request.nextUrl.searchParams.get('lang')||'fr';
+  let lang=isSiteLanguage(requested)?requested:'fr';
+  let t=reservationCopy(lang);
+  if (!sameOrigin(request)) return NextResponse.json({ error:t.origin }, { status:403 });
+  if (Number(request.headers.get('content-length') || 0) > 4096) return NextResponse.json({ error:t.large }, { status:413 });
   const raw = await request.text().catch(() => '');
-  if (raw.length > 4096) return NextResponse.json({ error:'Request too large' }, { status:413 });
+  if (raw.length > 4096) return NextResponse.json({ error:t.large }, { status:413 });
   const body = (() => { try { return JSON.parse(raw); } catch { return null; } })();
-  if (!body || typeof body !== 'object') return NextResponse.json({ error:'Invalid request' }, { status:400 });
+  if (!body || typeof body !== 'object') return NextResponse.json({ error:t.invalid }, { status:400 });
+  if(isSiteLanguage(body.lang)){lang=body.lang;t=reservationCopy(lang);}
   // A hidden field catches basic automated form submissions without affecting guests.
   if (body.website) return NextResponse.json({ ok:true });
   const name = typeof body.name === 'string' ? body.name.trim() : '';
@@ -37,22 +43,22 @@ export async function POST(request: NextRequest) {
       !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || /[\r\n]/.test(email) || !validDate ||
       !isReservationTime(time) ||
       !Number.isInteger(guests) || guests < 1 || guests > 50) {
-    return NextResponse.json({ error:'Please check the reservation details' }, { status:400 });
+    return NextResponse.json({ error:t.details }, { status:400 });
   }
   try {
     if ((await reservationClosedDates()).includes(date)) {
-      return NextResponse.json({ code:'RESTAURANT_CLOSED', error:'The restaurant is closed on this date' }, { status:409 });
+      return NextResponse.json({ code:'RESTAURANT_CLOSED', error:t.closed }, { status:409 });
     }
   } catch {
-    return NextResponse.json({ error:'Availability is temporarily unavailable. Please call the restaurant.' }, { status:503 });
+    return NextResponse.json({ error:t.availability }, { status:503 });
   }
   const config = mailConfiguration();
-  if (!config) return NextResponse.json({ error:'Reservations are temporarily unavailable. Please call the restaurant.' }, { status:503 });
+  if (!config) return NextResponse.json({ error:t.unavailable }, { status:503 });
   const { from, to } = config;
   const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
   const now = Date.now();
   const recent = (attempts.get(ip) || []).filter(at => now-at < 15*60_000);
-  if (recent.length >= 3) return NextResponse.json({ error:'Too many requests. Please call the restaurant.' }, { status:429 });
+  if (recent.length >= 3) return NextResponse.json({ error:t.rate }, { status:429 });
   attempts.set(ip, [...recent, now]);
   if (attempts.size > 2000) for (const [key, times] of attempts) if (times.every(at => now-at >= 15*60_000)) attempts.delete(key);
   try {
@@ -68,8 +74,7 @@ export async function POST(request: NextRequest) {
       await transport.sendMail({
         from,
         to:email,
-        subject:'Confirmation de votre réservation chez NOMADE',
-        text:`Bonjour ${name},\n\nVotre réservation a bien été enregistrée, merci et à bientôt !\n\nCordialement,\nNOMADE`,
+        ...reservationConfirmation(lang,name),
       });
     } catch (error) {
       confirmationEmailSent = false;
@@ -92,6 +97,6 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ ok:true, confirmationEmailSent });
   } catch {
-    return NextResponse.json({ error:'Unable to send the request. Please call the restaurant.' }, { status:502 });
+    return NextResponse.json({ error:t.failed }, { status:502 });
   }
 }

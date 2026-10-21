@@ -80,7 +80,8 @@ export default function ReservationForm({lang}: {lang:Lang}) {
     if (closedDates.includes(selectedDate)) { setStatus('closed'); return; }
     setBusy(true); setStatus('idle');
     try {
-      const response = await fetch('/api/reservations',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+      const response = await fetch(`/api/reservations?lang=${lang}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+        lang,
         name:fields.get('name'), phone:fields.get('phone'), email:fields.get('email'), date:selectedDate, time:fields.get('time'),
         guests:Number(fields.get('guests')), website:fields.get('website'),
       })});
@@ -106,7 +107,7 @@ export default function ReservationForm({lang}: {lang:Lang}) {
           <input name="date" type="hidden" value={date} required readOnly />
           <button type="button" className={`pickerTrigger ${date?'hasValue':''}`} disabled={!availability.ready} aria-haspopup="dialog" aria-expanded={dateOpen} onClick={()=>{setDateOpen(v=>!v);setTimeOpen(false)}}>{dateLabel}<span aria-hidden="true">⌄</span></button>
           {dateOpen && <div className="datePicker pickerPopover" role="dialog" aria-label={t.chooseDate}>
-            <div className="pickerHead"><button type="button" aria-label="Previous month" onClick={()=>changeMonth(-1)} disabled={view.year===initial.getFullYear()&&view.month===initial.getMonth()}>‹</button><strong>{monthLabel}</strong><button type="button" aria-label="Next month" onClick={()=>changeMonth(1)}>›</button></div>
+            <div className="pickerHead"><button type="button" aria-label={lang==='fr'?'Mois précédent':lang==='es'?'Mes anterior':'Previous month'} onClick={()=>changeMonth(-1)} disabled={view.year===initial.getFullYear()&&view.month===initial.getMonth()}>‹</button><strong>{monthLabel}</strong><button type="button" aria-label={lang==='fr'?'Mois suivant':lang==='es'?'Mes siguiente':'Next month'} onClick={()=>changeMonth(1)}>›</button></div>
             <div className="weekdays">{t.weekdays.map(day=><span key={day}>{day}</span>)}</div>
             <div className="calendarGrid">{calendarCells(view.year,view.month).map((day,index)=>{
               if (!day) return <span key={`blank-${index}`} />;

@@ -15,20 +15,49 @@ const copy = {
   es: { title:'Política de privacidad', description:'Política de privacidad de las reservas de NOMADE en Foix.', back:'Volver al sitio', intro:'NOMADE trata los datos personales necesarios para gestionar las reservas y solicitudes de contacto de conformidad con el Reglamento General de Protección de Datos (RGPD).', s1:'Responsable del tratamiento',s1p:`El responsable del tratamiento es ${restaurant.name}, ${restaurant.address}.`,s2:'Datos recopilados, finalidades y base jurídica',s2p:'El formulario de reserva envía su nombre, teléfono, correo electrónico, fecha, hora y número de personas. El restaurante puede añadir después un estado de seguimiento y un comentario interno a la reserva. Estos datos se utilizan únicamente para tramitar y confirmar la reserva, comprobar la disponibilidad y ponerse en contacto con usted. El tratamiento se basa en medidas precontractuales adoptadas a petición del interesado y, para el seguimiento administrativo, en el interés legítimo del restaurante.',s3:'Destinatarios, servicios utilizados y conservación',s3p:'La reserva se envía al buzón del restaurante y se registra en una hoja de cálculo de Google Sheets utilizada como registro operativo de reservas. También se envía un correo de confirmación a la dirección proporcionada. Estos servicios son prestados por Google. El acceso está limitado a las personas autorizadas por NOMADE. Los datos se conservan durante el tiempo necesario para tramitar y seguir la reserva y, después, se eliminan o anonimizan, sin perjuicio de las obligaciones legales aplicables. El tratamiento realizado por Google se rige por sus compromisos contractuales y garantías aplicables en materia de protección de datos.',s4:'Cookies y preferencias',s4p:'Con su consentimiento, el sitio utiliza Google Analytics para medir la audiencia, incluidas las páginas vistas, las fuentes de tráfico, el tipo de dispositivo y las interacciones agregadas. Puede aceptar, rechazar o modificar esta elección en cualquier momento con el enlace « Gestionar cookies » situado en el pie de página.',s5:'Sus derechos',s5p:'Usted tiene derecho de acceso, rectificación, supresión, limitación u oposición al tratamiento de sus datos, así como a la portabilidad. Para ejercer estos derechos, contacte con el restaurante mediante los datos indicados a continuación.',s6:'Reclamaciones',s6p:'También puede presentar una reclamación ante la CNIL (www.cnil.fr) si considera que no se respetan sus derechos.',contact:'Contacto'}
 };
 
+const lunchPrivacy={
+  fr:{
+    description:'Confidentialité des réservations, commandes de déjeuner à emporter et préférences cookies de NOMADE à Foix.',
+    intro:'NOMADE traite les données personnelles nécessaires à la gestion des réservations, des commandes de déjeuner à emporter et des demandes de contact, conformément au Règlement Général sur la Protection des Données (RGPD).',
+    orderTitle:'Commandes de déjeuner à emporter',
+    orderText:'Pour préparer et suivre votre commande, nous traitons votre prénom, nom, téléphone, adresse e-mail, date et heure de retrait, articles choisis, quantités et commentaire éventuel. Le récapitulatif est enregistré sur le serveur hébergé par o2switch et envoyé par e-mail au restaurant ainsi qu’à l’adresse que vous avez indiquée. Les informations sont accessibles aux personnes autorisées par NOMADE et aux prestataires techniques nécessaires à l’hébergement et à la messagerie. Ce traitement permet d’exécuter votre commande et d’en assurer le suivi. Les enregistrements et leurs sauvegardes privées sont conservés pendant la durée nécessaire à cette gestion, sous réserve des obligations applicables. Pour exercer vos droits, contactez le restaurant aux coordonnées ci-dessous.',
+    draftTitle:'Brouillon de commande dans le navigateur',
+    draftText:'Pour conserver votre sélection et reprendre une tentative d’envoi sans créer de doublon, le formulaire utilise le stockage de session de l’onglet (sessionStorage). Il peut contenir votre sélection, les coordonnées saisies et un identifiant de tentative. Ce stockage sert au fonctionnement du formulaire, pas à la publicité. Vous pouvez l’effacer dans les données de votre navigateur. Le choix relatif à Google Analytics est enregistré séparément dans le stockage local, pour une durée maximale de 13 × 30 jours. Sans accord valide, la mesure d’audience n’est pas activée. Vous pouvez retirer votre accord avec « Gérer les cookies ».',
+  },
+  en:{
+    description:'Privacy information for NOMADE bookings, takeaway lunch orders and cookie preferences in Foix.',
+    intro:'NOMADE processes the personal data needed to manage bookings, takeaway lunch orders and contact requests in accordance with the General Data Protection Regulation (GDPR).',
+    orderTitle:'Takeaway lunch orders',
+    orderText:'To prepare and manage your order, we process your first and last names, phone number, email address, pickup date and time, selected items, quantities and any comment. The summary is stored on the server hosted by o2switch and emailed to the restaurant and the address you provided. Access is limited to people authorised by NOMADE and the technical providers needed for hosting and email. Processing is necessary to fulfil and follow up your order. Records and their private backups are retained for as long as needed for this purpose, subject to applicable obligations. To exercise your rights, contact the restaurant using the details below.',
+    draftTitle:'Order draft in your browser',
+    draftText:'To retain your selection and resume a submission attempt without creating a duplicate, the form uses the tab’s session storage (sessionStorage). It may contain your selection, entered contact details and an attempt identifier. This storage supports the form and is not used for advertising. You can clear it in your browser’s site data. Your Google Analytics choice is stored separately in local storage for a maximum of 13 × 30 days. Audience measurement is not enabled without valid consent. You can withdraw consent using “Manage cookies”.',
+  },
+  es:{
+    description:'Privacidad de las reservas, pedidos de almuerzo para llevar y preferencias de cookies de NOMADE en Foix.',
+    intro:'NOMADE trata los datos personales necesarios para gestionar las reservas, los pedidos de almuerzo para llevar y las solicitudes de contacto de conformidad con el Reglamento General de Protección de Datos (RGPD).',
+    orderTitle:'Pedidos de almuerzo para llevar',
+    orderText:'Para preparar y gestionar tu pedido, tratamos tu nombre, apellidos, teléfono, correo electrónico, fecha y hora de recogida, artículos elegidos, cantidades y comentario opcional. El resumen se guarda en el servidor alojado por o2switch y se envía por correo al restaurante y a la dirección que indicaste. El acceso se limita a las personas autorizadas por NOMADE y a los proveedores técnicos necesarios para el alojamiento y el correo. El tratamiento permite atender y seguir tu pedido. Los registros y sus copias de seguridad privadas se conservan durante el tiempo necesario para esta gestión, sin perjuicio de las obligaciones aplicables. Para ejercer tus derechos, contacta con el restaurante mediante los datos indicados a continuación.',
+    draftTitle:'Borrador del pedido en el navegador',
+    draftText:'Para conservar tu selección y reanudar un intento de envío sin crear un duplicado, el formulario utiliza el almacenamiento de sesión de la pestaña (sessionStorage). Puede contener tu selección, los datos de contacto introducidos y un identificador del intento. Este almacenamiento sirve para el funcionamiento del formulario y no para publicidad. Puedes borrarlo en los datos del sitio de tu navegador. Tu elección sobre Google Analytics se guarda por separado en el almacenamiento local durante un máximo de 13 × 30 días. La medición de audiencia no se activa sin un consentimiento válido. Puedes retirarlo mediante « Gestionar cookies ».',
+  },
+};
+
 export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
   const { lang: rawLang } = await params;
   if (!isSiteLanguage(rawLang)) return {};
-  const t = copy[rawLang];
+  const t = {...copy[rawLang],...lunchPrivacy[rawLang]};
   return pageMetadata(rawLang, '/confidentialite', `${t.title} | NOMADE — Foix`, t.description);
 }
 
 export default async function Confidentialite({ params }: { params: Promise<{ lang: string }> }) {
   const { lang: rawLang } = await params;
   const lang = (['fr', 'en', 'es'] as const).includes(rawLang as 'fr' | 'en' | 'es') ? rawLang as 'fr' | 'en' | 'es' : 'fr';
-  const t = copy[lang];
+  const t = {...copy[lang],...lunchPrivacy[lang]};
 
   return <main className="legalPage" lang={lang}><div className="legalHead"><p className="eyebrow">NOMADE</p><h1>{t.title}</h1><Link className="textLink" href={`/${lang}#top`}>{t.back} <ArrowUpRight size={16} /></Link></div>
     <p className="lead legalIntro">{t.intro}</p>
+    <section className="legalSection"><h2>{t.orderTitle}</h2><p>{t.orderText}</p></section>
+    <section className="legalSection"><h2>{t.draftTitle}</h2><p>{t.draftText}</p></section>
     <section className="legalSection"><h2>{t.s1}</h2><p>{t.s1p}</p></section><section className="legalSection"><h2>{t.s2}</h2><p>{t.s2p}</p></section><section className="legalSection"><h2>{t.s3}</h2><p>{t.s3p}</p></section><section className="legalSection"><h2>{t.s4}</h2><p>{t.s4p}</p></section><section className="legalSection"><h2>{t.s5}</h2><p>{t.s5p}</p></section><section className="legalSection"><h2>{t.s6}</h2><p>{t.s6p}</p></section><section className="legalSection"><h2>{t.contact}</h2><p>{restaurant.contact}</p></section>
   </main>;
 }

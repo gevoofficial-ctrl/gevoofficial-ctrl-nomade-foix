@@ -3,9 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { COOKIE_CONSENT_CHANGED_EVENT, COOKIE_SETTINGS_EVENT } from './CookieSettingsButton';
 
-const STORAGE_KEY = 'nomade-cookie-consent';
-const MAX_AGE_MS = 13 * 30 * 24 * 60 * 60 * 1000;
-const ANALYTICS_CONSENT_VERSION = 1;
+import { COOKIE_STORAGE_KEY, ANALYTICS_CONSENT_VERSION, readCookieConsent } from '../lib/cookie-consent';
 
 const copy = {
   fr: { title: 'Préférences cookies', text: 'Avec votre accord, nous utilisons Google Analytics pour mesurer la fréquentation du site. Votre choix est mémorisé dans le stockage local de votre navigateur.', accept: 'Accepter', reject: 'Refuser', more: 'En savoir plus' },
@@ -23,10 +21,7 @@ export default function CookieBanner({ lang }: { lang: 'fr' | 'en' | 'es' }) {
   useEffect(() => {
     const timer = window.setTimeout(() => {
       try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        const { value, timestamp, analyticsConsentVersion } = raw ? JSON.parse(raw) : {};
-        const current = value === 'accepted' || value === 'refused' ? value : null;
-        setVisible(!current || analyticsConsentVersion !== ANALYTICS_CONSENT_VERSION || !timestamp || Date.now() - timestamp > MAX_AGE_MS);
+        setVisible(!readCookieConsent(localStorage));
       } catch {
         setVisible(true);
       }
@@ -49,7 +44,7 @@ export default function CookieBanner({ lang }: { lang: 'fr' | 'en' | 'es' }) {
     return () => window.cancelAnimationFrame(frame);
   }, [visible]);
   const choose = (value: 'accepted' | 'refused') => {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ value, timestamp: Date.now(), analyticsConsentVersion: ANALYTICS_CONSENT_VERSION })); } catch {}
+    try { localStorage.setItem(COOKIE_STORAGE_KEY, JSON.stringify({ value, timestamp: Date.now(), analyticsConsentVersion: ANALYTICS_CONSENT_VERSION })); } catch {}
     window.dispatchEvent(new Event(COOKIE_CONSENT_CHANGED_EVENT));
     setVisible(false);
     window.requestAnimationFrame(() => restoreFocusRef.current?.focus());
