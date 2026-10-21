@@ -35,8 +35,12 @@ npm run build
 npm audit
 ```
 
-The regression test also checks the absence of braces/micromatch in the lockfile
-and an isolated deeply nested pattern. If the plugin adds other fast-glob API
+The adapter rejects patterns deeper than 32 unescaped nested braces before
+calling the matcher. This avoids both stack exhaustion and excessive matcher
+CPU for pathological configuration input. Ordinary brace alternatives remain
+supported. The regression test checks this fail-fast behavior in an isolated
+process, as well as the absence of braces/micromatch in the lockfile.
+If the plugin adds other fast-glob API
 usage, re-evaluate this override before upgrading. Remove the override when an
 upstream compatible release no longer needs the vulnerable dependency chain.
 

@@ -32,6 +32,8 @@ test('lockfile removes braces/micromatch and limits the pinned replacement to th
   assert.ok(!Object.keys(lock.packages).some(key => /node_modules\/(braces|micromatch)$/.test(key)));
   const resolved = pluginRequire('fast-glob/package.json');
   assert.equal(resolved.name, '@nomade/next-eslint-glob');
+  assert.equal(resolved.version, require('../tools/next-eslint-glob/package.json').version);
+  assert.equal(resolved.version, lock.packages['node_modules/fast-glob'].version);
   assert.equal(resolved.dependencies.tinyglobby, '0.2.17');
   assert.equal(typeof pluginRequire('fast-glob').globSync, 'function');
 });
@@ -66,12 +68,15 @@ test('Core Web Vitals rules stay active and catch internal HTML links through li
   }
 });
 
-test('deep brace input terminates without stack exhaustion in an isolated process', t => {
+test('deep brace input is rejected before matching, without stack exhaustion or excessive CPU', t => {
   const dir = fixture(t);
   const result = spawnSync(process.execPath, ['-e', `
     const { globSync } = require(${JSON.stringify(replacementPath)});
+    const assert = require('node:assert/strict');
     const pattern = '{'.repeat(10000) + 'nomade' + '}'.repeat(10000);
-    globSync(pattern, { cwd: ${JSON.stringify(dir)}, onlyDirectories: true });
+    assert.throws(() => globSync(pattern, { cwd: ${JSON.stringify(dir)}, onlyDirectories: true }), { code: 'ERR_NOMADE_GLOB_DEPTH' });
+    assert.throws(() => globSync([pattern], { cwd: ${JSON.stringify(dir)}, onlyDirectories: true }), { code: 'ERR_NOMADE_GLOB_DEPTH' });
+    assert.doesNotThrow(() => globSync('packages/{one,two}', { cwd: ${JSON.stringify(dir)}, onlyDirectories: true }));
   `], { encoding: 'utf8', timeout: 5000, maxBuffer: 65536 });
   assert.ifError(result.error);
   assert.equal(result.status, 0, result.stderr);
