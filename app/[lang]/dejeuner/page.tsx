@@ -1,6 +1,9 @@
 import type { Metadata } from 'next';
+import { createHash } from 'node:crypto';
 import { notFound } from 'next/navigation';
 import { isSiteLanguage, pageMetadata } from '../../../lib/seo';
+import { readMenu } from '../../../lib/menu';
+import { lunchCatalog, type LunchCatalog } from '../../../lib/lunch-catalog';
 import DejeunerForm from '../../components/dejeuner-form';
 
 const meta = {
@@ -10,4 +13,11 @@ const meta = {
 };
 export const dynamic = 'force-dynamic';
 export async function generateMetadata({params}:{params:Promise<{lang:string}>}):Promise<Metadata>{ const {lang}=await params; if(!isSiteLanguage(lang)) notFound(); return pageMetadata(lang,'/dejeuner',meta[lang].title,meta[lang].description); }
-export default async function DejeunerPage({params}:{params:Promise<{lang:string}>}){ const {lang}=await params; if(!isSiteLanguage(lang)) notFound(); return <DejeunerForm lang={lang}/>; }
+export default async function DejeunerPage({params}:{params:Promise<{lang:string}>}) {
+  const {lang}=await params;
+  if(!isSiteLanguage(lang))notFound();
+  let catalog:LunchCatalog|null=null;
+  try {catalog=lunchCatalog(await readMenu(),lang);}catch{/* Keep the client error/retry fallback available. */}
+  const version=createHash('sha256').update(JSON.stringify(catalog)).digest('hex').slice(0,12);
+  return <DejeunerForm key={`${lang}:${version}`} lang={lang} initialMenu={catalog}/>;
+}

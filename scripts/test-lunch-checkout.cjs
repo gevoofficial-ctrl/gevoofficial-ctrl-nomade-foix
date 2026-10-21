@@ -38,7 +38,7 @@ function fixture() {
     const response=await api.POST(new NextRequest(`https://qa.invalid/api/dejeuner?lang=${lang}`,{method:'POST',headers:{origin:'https://qa.invalid',host:'qa.invalid','content-type':'application/json','x-forwarded-for':'192.0.2.1',...headers},body:typeof body==='string'?body:JSON.stringify(body)}));
     return {status:response.status,headers:response.headers,body:await response.json()};
   }
-  return {dir,env,state,payload,post,api:()=>api,availability:()=>load(path.join(root,'lib/reservation-availability.ts')),reload:()=>{cache.clear();api=load(path.join(root,'app/api/dejeuner/route.ts'));}};
+  return {dir,env,state,payload,post,api:()=>api,catalog:async lang=>load(path.join(root,'lib/lunch-catalog.ts')).lunchCatalog(await load(path.join(root,'lib/menu.ts')).readMenu(),lang),availability:()=>load(path.join(root,'lib/reservation-availability.ts')),reload:()=>{cache.clear();api=load(path.join(root,'app/api/dejeuner/route.ts'));}};
 }
 
 test('customer email, names, totals and errors follow FR/EN/ES; restaurant mail stays French',async()=>{
@@ -157,4 +157,26 @@ test('authorization and invalid closure responses fail closed without retry or m
     await assert.rejects(q.availability().reservationClosedDates(),/Availability service failed/);
     assert.equal(q.state.closureCalls,1);assert.equal(q.state.sent.length,0);
   }
+});
+
+test('server-rendered catalog and fallback API expose identical public data in all languages',async()=>{
+  const q=fixture();q.state.availability=false;
+  for(const lang of ['fr','en','es']) {
+    const initial=await q.catalog(lang);
+    const response=await q.api().GET(new NextRequest(`https://qa.invalid/api/dejeuner?lang=${lang}&availability=separate`));
+    assert.equal(response.status,200);
+    assert.deepEqual(JSON.parse(JSON.stringify(initial)),await response.json());
+    assert.equal(initial.availabilityReady,false);assert.equal(initial.closedDates.length,0);
+    assert.equal(initial.dishes[0].regularPriceCents,1600);assert.equal(initial.drinks[0].lunchPriceCents,450);
+    assert.equal(q.state.closureCalls,0);assert.equal(q.state.sent.length,0);
+  }
+});
+
+test('initial catalog reads current menu changes, filters unavailable items and omits admin-only fields',async()=>{
+  const q=fixture();const menu=JSON.parse(fs.readFileSync(q.env.NOMADE_MENU_FILE,'utf8'));
+  menu[0].regularPriceCents=1800;menu[0].translations.fr.ingredients='private-field-not-in-catalog';
+  menu[1].available=false;fs.writeFileSync(q.env.NOMADE_MENU_FILE,JSON.stringify(menu));
+  const initial=await q.catalog('fr');
+  assert.equal(initial.dishes[0].regularPriceCents,1800);assert.equal(initial.drinks.length,0);
+  assert.ok(!JSON.stringify(initial).includes('private-field-not-in-catalog'));assert.equal(q.state.closureCalls,0);
 });

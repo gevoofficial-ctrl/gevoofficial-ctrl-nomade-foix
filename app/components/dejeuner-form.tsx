@@ -7,7 +7,7 @@ import { allowedDate, euros, hasLunchSpecialPrice, nextPickupDate } from '../../
 
 import { AvailabilityStatus, useReservationAvailability } from './reservation-availability';
 
-type Item = { id:string; name:string; description:string; imageUrl:string; regularPriceCents:number|null; lunchPriceCents:number|null };
+import type { LunchCatalog, LunchItem as Item } from '../../lib/lunch-catalog';
 type Lang = 'fr'|'en'|'es';
 const copy = {
   fr:{eyebrow:'À EMPORTER · MIDI',title:'Déjeuner à emporter',intro:'Composez votre déjeuner à emporter. Dès 4 plats, le prix spécial s’applique à tous les plats. Dès 4 boissons, il s’applique à toutes les boissons.',dishes:'Les plats',drinks:'Les boissons',date:'Date de retrait',time:'Heure de retrait',firstName:'Prénom',lastName:'Nom',phone:'Téléphone',email:'E-mail',comment:'Commentaire ou demande particulière',send:'Envoyer la commande',sending:'Envoi en cours…',choose:'Choisissez vos plats pour commencer.',regular:'Prix habituel',special:'Prix spécial appliqué à cette catégorie dès 4 articles.',priceSoon:'Prix habituel bientôt disponible',priceMissing:'Le prix habituel de cette sélection sera bientôt disponible. Le prix spécial s’applique séparément dès 4 plats ou dès 4 boissons.',pickup:'Retrait chez NOMADE · 12h00–14h00 · paiement sur place',success:'Votre commande {order} a bien été envoyée. Un récapitulatif vous a été envoyé par e-mail.',noEmail:'Votre commande {order} est enregistrée. L’e-mail de confirmation n’a pas pu être envoyé. Pour toute question, appelez-nous au 07 45 26 28 23.',unavailable:'Le service est momentanément indisponible. Réessayez ou appelez-nous au 07 45 26 28 23.',empty:'Les plats du déjeuner seront bientôt disponibles.',previous:'Plats précédents',next:'Plats suivants',previousMonth:'Mois précédent',nextMonth:'Mois suivant',total:'Total',chooseDate:'Choisir une date',chooseTime:'Choisir une heure',dates:'Du lundi au vendredi. Commandez pour aujourd’hui entre 09h30 et 11h30, heure de France. Les jours suivants restent disponibles.',invalidDate:'Choisissez un jour ouvré disponible. Pour aujourd’hui, les commandes ouvrent à 09h30 et ferment à 11h30.',closedDate:'Le restaurant est fermé à cette date. Choisissez un autre jour.',payment:'Le règlement sera effectué sur place le jour du retrait.',privacy:'Vos coordonnées servent uniquement à gérer votre commande.',policy:'Confidentialité',retry:'Vérifier / reprendre cet envoi',pending:'Votre envoi est en cours de vérification. Réessayez avec cette même tentative.',newOrder:'Préparer une nouvelle commande',loading:'Chargement du déjeuner…',add:'Ajouter',remove:'Retirer',restored:'Votre tentative a été conservée. Reprenez cet envoi pour vérifier son résultat.',weekdays:['Lu','Ma','Me','Je','Ve','Sa','Di']},
@@ -32,8 +32,8 @@ function ItemRail({title,id,items,quantities,onQuantity,t,disabled,itemCount}:{t
   return <section className="lunchGroup" aria-labelledby={`${id}-title`}>
     <div className="lunchGroupHead"><h2 id={`${id}-title`}>{title}</h2>{items.length>4&&<div className="lunchRailControls"><button type="button" aria-label={t.previous} onClick={()=>rail.current?.scrollBy({left:-320,behavior:'smooth'})}>←</button><button type="button" aria-label={t.next} onClick={()=>rail.current?.scrollBy({left:320,behavior:'smooth'})}>→</button></div>}</div>
     <div className={`lunchRail${items.length<=4?' lunchRailShort':''}`} ref={rail} tabIndex={items.length>4?0:undefined} aria-label={title}>
-      {items.map(item=>{const price=special?item.lunchPriceCents:item.regularPriceCents;return <article className="lunchCard" key={item.id}>
-        <div className="lunchCardImage">{item.imageUrl&&<Image src={item.imageUrl} alt={item.name} fill sizes="(max-width:380px) 78vw, (max-width:388px) 280px, (max-width:800px) 72vw, 280px"/>}</div>
+      {items.map((item,index)=>{const price=special?item.lunchPriceCents:item.regularPriceCents;return <article className="lunchCard" key={item.id}>
+        <div className="lunchCardImage">{item.imageUrl&&<Image src={item.imageUrl} alt={item.name} fill loading={id==='lunch-mains'&&index===0?'eager':'lazy'} fetchPriority={id==='lunch-mains'&&index===0?'high':undefined} sizes="(max-width:380px) 78vw, (max-width:388px) 280px, (max-width:800px) 72vw, 280px"/>}</div>
         <div className="lunchCardBody"><h3>{item.name}</h3>{item.description&&<p>{item.description}</p>}<div className="lunchPrice"><span>{special?t.special:t.regular}</span><strong>{price===null?t.priceSoon:euros(price)}</strong></div>
           <div className="quantity"><button type="button" aria-label={`${t.remove} ${item.name}`} disabled={disabled||!quantities[item.id]} onClick={()=>onQuantity(item.id,-1)}>−</button><output aria-live="polite" key={quantities[item.id]||0}>{quantities[item.id]||0}</output><button type="button" aria-label={`${t.add} ${item.name}`} disabled={disabled||(quantities[item.id]||0)>=999} onClick={()=>onQuantity(item.id,1)}>+</button></div>
         </div>
@@ -58,11 +58,11 @@ function LunchLoading({label}:{label:string}) {
   </section>;
 }
 
-export default function DejeunerForm({lang}:{lang:Lang}) {
+export default function DejeunerForm({lang,initialMenu=null}:{lang:Lang;initialMenu?:LunchCatalog|null}) {
   const t=copy[lang];
   const initialDate=nextPickupDate();
   const initialMonth=parseIso(initialDate);
-  const [items,setItems]=useState<{dishes:Item[];drinks:Item[];pickupSlots:string[];closedDates:string[]}>({dishes:[],drinks:[],pickupSlots:[],closedDates:[]});
+  const [items,setItems]=useState<Pick<LunchCatalog,'dishes'|'drinks'|'pickupSlots'|'closedDates'>>(initialMenu??{dishes:[],drinks:[],pickupSlots:[],closedDates:[]});
   const [quantities,setQuantities]=useState<Record<string,number>>({});
   const [fields,setFields]=useState<Fields>(blankFields);
   const [date,setDate]=useState(initialDate);
@@ -73,7 +73,7 @@ export default function DejeunerForm({lang}:{lang:Lang}) {
   const [receipt,setReceipt]=useState<Receipt|null>(null);
   const [status,setStatus]=useState('');
   const [busy,setBusy]=useState(false);
-  const [loaded,setLoaded]=useState(false);
+  const [loaded,setLoaded]=useState(Boolean(initialMenu));
   const [menuError,setMenuError]=useState(false);
   const [menuRequest,setMenuRequest]=useState(0);
   const [restored,setRestored]=useState(false);
@@ -84,7 +84,7 @@ export default function DejeunerForm({lang}:{lang:Lang}) {
   const pickerRef=useRef<HTMLFieldSetElement>(null);
   const sending=useRef(false);
   useEffect(()=>{const restoreFrame=requestAnimationFrame(()=>{try {const saved=sessionStorage.getItem(storageKey);if(saved){const draft=JSON.parse(saved) as Draft;if(draft.fields&&typeof draft.date==='string'&&draft.quantities){setQuantities(draft.quantities);setFields(draft.fields);setDate(draft.date);setTime(draft.time||'');setAttempt(draft.attempt||null);setReceipt(draft.receipt||null);if(draft.attempt)setStatus(t.restored);}}}catch{}setRestored(true);});const timer=setInterval(()=>tick(n=>n+1),30000);return()=>{cancelAnimationFrame(restoreFrame);clearInterval(timer);};},[t.restored]);
-  useEffect(()=>{let active=true;const controller=new AbortController();const timeout=setTimeout(()=>controller.abort(),15000);fetch(`/api/dejeuner?lang=${lang}&availability=separate`,{cache:'no-store',signal:controller.signal}).then(async response=>{if(!response.ok)throw new Error();return response.json();}).then(body=>{if(!Array.isArray(body.dishes)||!Array.isArray(body.drinks)||!Array.isArray(body.pickupSlots)||!Array.isArray(body.closedDates))throw new Error();if(active)setItems(body);}).catch(()=>{if(active)setMenuError(true);}).finally(()=>{clearTimeout(timeout);if(active)setLoaded(true);});return()=>{active=false;clearTimeout(timeout);controller.abort();};},[lang,menuRequest]);
+  useEffect(()=>{if(initialMenu&&menuRequest===0)return;let active=true;const controller=new AbortController();const timeout=setTimeout(()=>controller.abort(),15000);fetch(`/api/dejeuner?lang=${lang}&availability=separate`,{cache:'no-store',signal:controller.signal}).then(async response=>{if(!response.ok)throw new Error();return response.json();}).then(body=>{if(!Array.isArray(body.dishes)||!Array.isArray(body.drinks)||!Array.isArray(body.pickupSlots)||!Array.isArray(body.closedDates))throw new Error();if(active)setItems(body);}).catch(()=>{if(active)setMenuError(true);}).finally(()=>{clearTimeout(timeout);if(active)setLoaded(true);});return()=>{active=false;clearTimeout(timeout);controller.abort();};},[lang,menuRequest,initialMenu]);
   useEffect(()=>{const close=(event:PointerEvent)=>{if(pickerRef.current&&!pickerRef.current.contains(event.target as Node)){setDateOpen(false);setTimeOpen(false);}};document.addEventListener('pointerdown',close);return()=>document.removeEventListener('pointerdown',close);},[]);
   useEffect(()=>{if(!restored)return;try{sessionStorage.setItem(storageKey,JSON.stringify({quantities,fields,date,time,attempt,receipt} satisfies Draft));}catch{}},[quantities,fields,date,time,attempt,receipt,restored]);
   const mainCount=items.dishes.reduce((sum,item)=>sum+(quantities[item.id]||0),0);
@@ -118,7 +118,7 @@ export default function DejeunerForm({lang}:{lang:Lang}) {
       {!loaded&&<LunchLoading label={t.loading} />}
       {loaded&&menuError&&<div className="dejeunerEmpty lunchLoadError" role="status"><p>{t.unavailable}</p><button type="button" className="button" onClick={()=>{setMenuError(false);setLoaded(false);setMenuRequest(value=>value+1);availability.retry();}}>{lang==='fr'?'Réessayer':lang==='en'?'Try again':'Reintentar'}</button></div>}
       {loaded&&!menuError&&items.dishes.length===0&&!attempt&&<p className="dejeunerEmpty">{status||t.empty}</p>}
-      {loaded&&((!menuError&&items.dishes.length>0)||attempt)&&<form className="dejeunerForm lunchMenuReady" onSubmit={submit}>
+      {loaded&&((!menuError&&items.dishes.length>0)||attempt)&&<form className={`dejeunerForm${initialMenu?'':' lunchMenuReady'}`} onSubmit={submit}>
         <ItemRail title={t.dishes} id="lunch-mains" items={items.dishes} quantities={quantities} onQuantity={onQuantity} t={t} disabled={locked} itemCount={mainCount} />
         {items.drinks.length>0&&<ItemRail title={t.drinks} id="lunch-drinks" items={items.drinks} quantities={quantities} onQuantity={onQuantity} t={t} disabled={locked} itemCount={drinkCount} />}
         <AvailabilityStatus lang={lang} availability={availability}/>

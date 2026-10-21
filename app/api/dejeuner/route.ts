@@ -3,7 +3,8 @@ import { createHash } from 'node:crypto';
 import path from 'node:path';
 import { NextRequest, NextResponse } from 'next/server';
 import { sameOrigin } from '../../../lib/admin-auth';
-import { menuFile, readMenu, sortedMenu, type Dish, type Lang, localized } from '../../../lib/menu';
+import { menuFile, readMenu, type Dish, type Lang } from '../../../lib/menu';
+import { lunchCatalog } from '../../../lib/lunch-catalog';
 import { allowedDate, euros, lunchAvailable, lunchKind, lunchLinePrice, pickupSlots } from '../../../lib/lunch';
 import { mailConfiguration, mailTransport } from '../../../lib/mail';
 import { lunchReservationClosedDates, reservationClosedDates } from '../../../lib/reservation-availability';
@@ -61,12 +62,7 @@ export async function GET(request:NextRequest) {
   let menu:Dish[], closedDates:string[];
   try { [menu,closedDates]=await Promise.all([readMenu(),menuOnly?Promise.resolve([]):lunchReservationClosedDates()]); }
   catch { return NextResponse.json({error:lunchMessages[lang].availability},{status:503,headers:{'Cache-Control':'no-store'}}); }
-  menu=sortedMenu(menu).filter(lunchAvailable);
-  const item=(dish:Dish)=>{
-    const text=localized(dish,lang);
-    return {id:dish.id,name:text.name,description:text.description,imageUrl:dish.imageUrl,regularPriceCents:dish.regularPriceCents,lunchPriceCents:dish.lunchPriceCents};
-  };
-  return NextResponse.json({dishes:menu.filter(d=>lunchKind(d)==='main').map(item),drinks:menu.filter(d=>lunchKind(d)==='drink').map(item),pickupSlots,closedDates,availabilityReady:!menuOnly},{headers:{'Cache-Control':'no-store'}});
+  return NextResponse.json({...lunchCatalog(menu,lang),closedDates,availabilityReady:!menuOnly},{headers:{'Cache-Control':'no-store'}});
 }
 
 export async function POST(request:NextRequest) {
