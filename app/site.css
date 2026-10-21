@@ -154,3 +154,5 @@ footer a,footer button{display:inline-flex;align-items:center;min-height:44px}
 .heroContent h1,.dejeunerHero h1{font-family:'NOMADE Hero','Playfair Display',serif}
 .heroContent h1 .srOnly{font-family:Arial,sans-serif}
 .lunchLoading{min-height:100svh}
+.siteContent{min-height:100svh}
+footer .logo img{aspect-ratio:2933/1000}
