@@ -152,3 +152,5 @@ footer a,footer button{display:inline-flex;align-items:center;min-height:44px}
 .availabilityStatus button:hover,.availabilityStatus button:focus-visible{border-color:var(--accent)}
 .availabilityStatus a{color:inherit;text-underline-offset:3px}
 .heroContent h1,.dejeunerHero h1{font-family:'NOMADE Hero','Playfair Display',serif}
+.heroContent h1 .srOnly{font-family:Arial,sans-serif}
+.lunchLoading{min-height:100svh}

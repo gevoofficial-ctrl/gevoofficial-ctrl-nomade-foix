@@ -1,5 +1,8 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { getImageProps } from 'next/image';
+import { readMenu, sortedMenu } from '../../../lib/menu';
+import { lunchAvailable, lunchImageSizes, lunchKind } from '../../../lib/lunch';
 import { isSiteLanguage, pageMetadata } from '../../../lib/seo';
 import DejeunerForm from '../../components/dejeuner-form';
 
@@ -10,4 +13,16 @@ const meta = {
 };
 export const dynamic = 'force-dynamic';
 export async function generateMetadata({params}:{params:Promise<{lang:string}>}):Promise<Metadata>{ const {lang}=await params; if(!isSiteLanguage(lang)) notFound(); return pageMetadata(lang,'/dejeuner',meta[lang].title,meta[lang].description); }
-export default async function DejeunerPage({params}:{params:Promise<{lang:string}>}){ const {lang}=await params; if(!isSiteLanguage(lang)) notFound(); return <DejeunerForm lang={lang}/>; }
+export default async function DejeunerPage({params}:{params:Promise<{lang:string}>}) {
+  const {lang}=await params;
+  if(!isSiteLanguage(lang))notFound();
+  // Hint the same responsive image that the live menu will render. A failed
+  // read must not prevent the client loading/error/retry screen from opening.
+  let imageUrl='';
+  try {imageUrl=sortedMenu(await readMenu()).find(dish=>lunchAvailable(dish)&&lunchKind(dish)==='main')?.imageUrl||'';}catch{}
+  const image=imageUrl?getImageProps({src:imageUrl,alt:'',fill:true,sizes:lunchImageSizes}).props:null;
+  return <>
+    {image&&<link rel="preload" as="image" imageSrcSet={image.srcSet} imageSizes={image.sizes} fetchPriority="high"/>}
+    <DejeunerForm lang={lang}/>
+  </>;
+}

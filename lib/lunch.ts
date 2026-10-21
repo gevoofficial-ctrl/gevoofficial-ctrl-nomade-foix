@@ -1,5 +1,7 @@
 import type { Dish } from './menu';
 
+export const lunchImageSizes='(max-width:380px) 78vw, (max-width:388px) 280px, (max-width:800px) 72vw, 280px';
+
 /** Pickup is available every ten minutes from 12:00 through 14:00 inclusive. */
 export const pickupSlots = Array.from({ length:13 }, (_, i) => {
   const minutes = 720 + i * 10;
