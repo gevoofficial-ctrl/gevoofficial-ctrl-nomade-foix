@@ -151,8 +151,3 @@ footer a,footer button{display:inline-flex;align-items:center;min-height:44px}
 .availabilityStatus button{min-height:44px;padding:8px 16px;border:1px solid var(--line);background:transparent;color:var(--paper);font:inherit;cursor:pointer}
 .availabilityStatus button:hover,.availabilityStatus button:focus-visible{border-color:var(--accent)}
 .availabilityStatus a{color:inherit;text-underline-offset:3px}
-.heroContent h1,.dejeunerHero h1{font-family:'NOMADE Hero','Playfair Display',serif}
-.heroContent h1 .srOnly{font-family:Arial,sans-serif}
-.lunchLoading{min-height:100svh}
-.siteContent{min-height:100svh}
-footer .logo img{aspect-ratio:2933/1000}

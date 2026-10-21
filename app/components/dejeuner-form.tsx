@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
-import { allowedDate, euros, hasLunchSpecialPrice, lunchImageSizes, nextPickupDate } from '../../lib/lunch';
+import { allowedDate, euros, hasLunchSpecialPrice, nextPickupDate } from '../../lib/lunch';
 
 import { AvailabilityStatus, useReservationAvailability } from './reservation-availability';
 
@@ -33,7 +33,7 @@ function ItemRail({title,id,items,quantities,onQuantity,t,disabled,itemCount}:{t
     <div className="lunchGroupHead"><h2 id={`${id}-title`}>{title}</h2>{items.length>4&&<div className="lunchRailControls"><button type="button" aria-label={t.previous} onClick={()=>rail.current?.scrollBy({left:-320,behavior:'smooth'})}>←</button><button type="button" aria-label={t.next} onClick={()=>rail.current?.scrollBy({left:320,behavior:'smooth'})}>→</button></div>}</div>
     <div className={`lunchRail${items.length<=4?' lunchRailShort':''}`} ref={rail} tabIndex={items.length>4?0:undefined} aria-label={title}>
       {items.map(item=>{const price=special?item.lunchPriceCents:item.regularPriceCents;return <article className="lunchCard" key={item.id}>
-        <div className="lunchCardImage">{item.imageUrl&&<Image src={item.imageUrl} alt={item.name} fill sizes={lunchImageSizes}/>}</div>
+        <div className="lunchCardImage">{item.imageUrl&&<Image src={item.imageUrl} alt={item.name} fill sizes="(max-width:380px) 78vw, (max-width:388px) 280px, (max-width:800px) 72vw, 280px"/>}</div>
         <div className="lunchCardBody"><h3>{item.name}</h3>{item.description&&<p>{item.description}</p>}<div className="lunchPrice"><span>{special?t.special:t.regular}</span><strong>{price===null?t.priceSoon:euros(price)}</strong></div>
           <div className="quantity"><button type="button" aria-label={`${t.remove} ${item.name}`} disabled={disabled||!quantities[item.id]} onClick={()=>onQuantity(item.id,-1)}>−</button><output aria-live="polite" key={quantities[item.id]||0}>{quantities[item.id]||0}</output><button type="button" aria-label={`${t.add} ${item.name}`} disabled={disabled||(quantities[item.id]||0)>=999} onClick={()=>onQuantity(item.id,1)}>+</button></div>
         </div>

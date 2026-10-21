@@ -26,5 +26,5 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
 export default async function LangLayout({ children, params }: { children: React.ReactNode; params: Promise<{ lang: string }> }) {
   const { lang: rawLang } = await params;
   if (!isLang(rawLang)) notFound();
-  return <><div className="siteContent">{children}</div><SiteFooter lang={rawLang} /><CookieBanner lang={rawLang} /></>;
+  return <>{children}<SiteFooter lang={rawLang} /><CookieBanner lang={rawLang} /></>;
 }
