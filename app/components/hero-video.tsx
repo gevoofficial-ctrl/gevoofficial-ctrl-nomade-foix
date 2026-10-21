@@ -62,7 +62,7 @@ export default function HeroVideo({ fallback }: HeroVideoProps) {
       onCanPlay={() => setIsReady(true)}
     >
       <source media="(min-width: 801px)" src="/video/nomade-hero.mp4" type="video/mp4" />
-      {loadMobileVideo && <source media="(max-width: 800px)" src="/video/nomade-hero.mp4" type="video/mp4" />}
+      {loadMobileVideo && <source media="(max-width: 800px)" src="/video/nomade-hero-mobile-v1.mp4" type="video/mp4" />}
       {fallback}
     </video>
   );

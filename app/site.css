@@ -152,4 +152,4 @@ footer a,footer button{display:inline-flex;align-items:center;min-height:44px}
 .availabilityStatus button:hover,.availabilityStatus button:focus-visible{border-color:var(--accent)}
 .availabilityStatus a{color:inherit;text-underline-offset:3px}
 /* Keep the same drawing scale and opacity; mobile does not need a 3072px tile. */
-@media(max-width:800px){.brandPrint,.printSection::before,.localCopy::before,.dejeunerPage.printSection::before{background-image:url('/images/nomade-print-mobile-v1.webp')}}
+@media(max-width:800px){.brandPrint,.printSection::before,.localCopy::before,.dejeunerPage.printSection::before{background-image:url('/images/nomade-print-mobile-v2.webp')}}

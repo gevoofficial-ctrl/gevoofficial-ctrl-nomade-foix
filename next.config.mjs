@@ -61,6 +61,12 @@ const nextConfig = {
           { key: 'Cache-Control', value: 'public, max-age=86400, stale-while-revalidate=604800' },
         ],
       },
+      // Versioned assets are never overwritten: retain them across visits without
+      // changing cache policy for mutable menu data or unversioned photographs.
+      ...['/images/nomade-print-mobile-v2.webp', '/video/nomade-hero-poster-v2.webp', '/video/nomade-hero-mobile-v1.mp4'].map(source => ({
+        source,
+        headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }],
+      })),
     ];
   },
 };
