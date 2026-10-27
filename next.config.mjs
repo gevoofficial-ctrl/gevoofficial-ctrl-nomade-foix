@@ -2,6 +2,7 @@
 const nextConfig = {
   reactStrictMode: true,
   images: {
+    qualities: [65, 75],
     // Match the site's cards and split layouts without generating 3840px variants.
     deviceSizes: [480, 640, 750, 828, 960, 1080, 1200, 1600, 1920, 2048],
     imageSizes: [32, 48, 64, 96, 128, 256, 384],
