@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { useCallback, useRef, useState, type FormEvent } from 'react';
 import Link from 'next/link';
 import type { Lang } from '../../lib/menu';
 import { AvailabilityStatus, useReservationAvailability } from './reservation-availability';
 import { reservationTimeSlots } from '../../lib/reservation-times';
+import { useReservationPicker } from './use-reservation-picker';
 
 const copy = {
   fr: { title:'Votre table chez NOMADE', intro:'Réservez votre table. Une confirmation vous sera adressée par e-mail.', name:'Nom', phone:'Téléphone', email:'E-mail', date:'Date', time:'Heure', guests:'Nombre de personnes', send:'Confirmer la réservation', sending:'Envoi…', success:'Votre réservation est confirmée. Un e-mail de confirmation vient de vous être envoyé.', emailWarning:'Votre réservation est confirmée, mais l’e-mail de confirmation n’a pas pu être envoyé. Appelez-nous au 07 45 26 28 23 si nécessaire.', error:'Impossible d’envoyer la réservation. Appelez-nous au 07 45 26 28 23.', pastDate:'Choisissez une date à partir d’aujourd’hui.', closed:'Le restaurant est fermé ce jour. Choisissez une autre date.', privacy:'Vos coordonnées servent uniquement à gérer votre réservation.', policy:'Confidentialité', chooseDate:'Choisir une date', chooseTime:'Choisir une heure', weekdays:['Lu','Ma','Me','Je','Ve','Sa','Di'] },
@@ -44,23 +45,18 @@ export default function ReservationForm({lang}: {lang:Lang}) {
   const [dateOpen,setDateOpen] = useState(false);
   const [timeOpen,setTimeOpen] = useState(false);
   const [view,setView] = useState({year:initial.getFullYear(),month:initial.getMonth()});
-  const pickerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const close = (event:PointerEvent) => {
-      if (pickerRef.current && !pickerRef.current.contains(event.target as Node)) {
-        setDateOpen(false); setTimeOpen(false);
-      }
-    };
-    document.addEventListener('pointerdown',close);
-    return () => document.removeEventListener('pointerdown',close);
-  }, []);
+  const dateTrigger=useRef<HTMLButtonElement>(null), timeTrigger=useRef<HTMLButtonElement>(null);
+  const datePopup=useRef<HTMLDivElement>(null), timePopup=useRef<HTMLDivElement>(null);
+  const closeDate=useCallback(()=>setDateOpen(false),[setDateOpen]), closeTime=useCallback(()=>setTimeOpen(false),[setTimeOpen]);
+  useReservationPicker(dateOpen,closeDate,dateTrigger,datePopup,`${view.year}-${view.month}`);
+  useReservationPicker(timeOpen,closeTime,timeTrigger,timePopup);
 
   const chooseDate = (value:string) => {
     if(!availability.ready)return;
     if (value < minimumDate) { setStatus('pastDate'); return; }
     if (closedDates.includes(value)) { setStatus('closed'); return; }
     setDate(value); setStatus('idle'); setDateOpen(false);
+    dateTrigger.current?.focus({preventScroll:true});
   };
   const changeMonth = (delta:number) => {
     const next = new Date(view.year,view.month + delta,1);
@@ -99,14 +95,14 @@ export default function ReservationForm({lang}: {lang:Lang}) {
     <div><p className="eyebrow">05 / NOMADE</p><h2 id="reservation-title">{t.title}</h2><p className="lead">{t.intro}</p><p className="muted">{t.privacy} <Link href={`/${lang}/confidentialite`}>{t.policy}</Link></p></div>
     <form onSubmit={submit} className="reservationForm">
       <AvailabilityStatus lang={lang} availability={availability}/>
-      <div className="reservationFields" ref={pickerRef}>
+      <div className="reservationFields">
         <label>{t.name}<input name="name" type="text" autoComplete="name" minLength={2} maxLength={100} required /></label>
         <label>{t.phone}<input name="phone" type="tel" autoComplete="tel" minLength={6} maxLength={25} required /></label>
         <label className="emailField">{t.email}<input name="email" type="email" autoComplete="email" maxLength={254} required /></label>
         <label className="pickerField">{t.date}
           <input name="date" type="hidden" value={date} required readOnly />
-          <button type="button" className={`pickerTrigger ${date?'hasValue':''}`} disabled={!availability.ready} aria-haspopup="dialog" aria-expanded={dateOpen} onClick={()=>{setDateOpen(v=>!v);setTimeOpen(false)}}>{dateLabel}<span aria-hidden="true">⌄</span></button>
-          {dateOpen && <div className="datePicker pickerPopover" role="dialog" aria-label={t.chooseDate}>
+          <button ref={dateTrigger} type="button" className={`pickerTrigger ${date?'hasValue':''}`} disabled={!availability.ready} aria-haspopup="dialog" aria-expanded={dateOpen} onClick={()=>{setDateOpen(v=>!v);setTimeOpen(false)}}>{dateLabel}<span aria-hidden="true">⌄</span></button>
+          {dateOpen && <div ref={datePopup} className="datePicker pickerPopover" role="dialog" aria-label={t.chooseDate}>
             <div className="pickerHead"><button type="button" aria-label={lang==='fr'?'Mois précédent':lang==='es'?'Mes anterior':'Previous month'} onClick={()=>changeMonth(-1)} disabled={view.year===initial.getFullYear()&&view.month===initial.getMonth()}>‹</button><strong>{monthLabel}</strong><button type="button" aria-label={lang==='fr'?'Mois suivant':lang==='es'?'Mes siguiente':'Next month'} onClick={()=>changeMonth(1)}>›</button></div>
             <div className="weekdays">{t.weekdays.map(day=><span key={day}>{day}</span>)}</div>
             <div className="calendarGrid">{calendarCells(view.year,view.month).map((day,index)=>{
@@ -119,8 +115,8 @@ export default function ReservationForm({lang}: {lang:Lang}) {
         </label>
         <label className="pickerField">{t.time}
           <input name="time" type="hidden" value={time} required readOnly />
-          <button type="button" className={`pickerTrigger ${time?'hasValue':''}`} disabled={!availability.ready} aria-haspopup="listbox" aria-expanded={timeOpen} onClick={()=>{setTimeOpen(v=>!v);setDateOpen(false)}}>{time || t.chooseTime}<span aria-hidden="true">⌄</span></button>
-          {timeOpen && <div className="timePicker pickerPopover" role="listbox" aria-label={t.chooseTime}>{reservationTimeSlots.map(slot=><button key={slot} type="button" role="option" aria-selected={slot===time} className={slot===time?'selected':''} onClick={()=>{setTime(slot);setTimeOpen(false)}}>{slot}</button>)}</div>}
+          <button ref={timeTrigger} type="button" className={`pickerTrigger ${time?'hasValue':''}`} disabled={!availability.ready} aria-haspopup="listbox" aria-expanded={timeOpen} onClick={()=>{setTimeOpen(v=>!v);setDateOpen(false)}}>{time || t.chooseTime}<span aria-hidden="true">⌄</span></button>
+          {timeOpen && <div ref={timePopup} className="timePicker pickerPopover" role="listbox" aria-label={t.chooseTime}>{reservationTimeSlots.map(slot=><button key={slot} type="button" role="option" aria-selected={slot===time} className={slot===time?'selected':''} onClick={()=>{setTime(slot);setTimeOpen(false);timeTrigger.current?.focus({preventScroll:true});}}>{slot}</button>)}</div>}
         </label>
         <label>{t.guests}<input name="guests" type="number" min="1" max="50" defaultValue="2" required /></label>
       </div>

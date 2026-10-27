@@ -1,62 +1,31 @@
-name: Deploy Nomade staging
+name: Validate NOMADE
 
+# Production is published manually through cPanel. CI must never reset the
+# hosting checkout: data/menu.json and .htaccess contain live server changes.
 on:
   push:
-    branches:
-      - main
+    branches: [main]
+  pull_request:
   workflow_dispatch:
-
-concurrency:
-  group: nomade-staging-deploy
-  cancel-in-progress: false
 
 permissions:
   contents: read
 
+concurrency:
+  group: nomade-validation-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  deploy:
-    name: Deploy to o2switch
+  validate:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Configure SSH
-        shell: bash
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.O2SWITCH_SSH_KEY }}
-        run: |
-          set -euo pipefail
-          mkdir -p ~/.ssh
-          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
-          ssh-keyscan -T 10 -H bouclier.o2switch.net >> ~/.ssh/known_hosts || true
-          chmod 644 ~/.ssh/known_hosts
-
-      - name: Deploy on o2switch
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          ssh -o BatchMode=yes -o StrictHostKeyChecking=no bebi3837@bouclier.o2switch.net 'bash -se' <<'REMOTE'
-          set -euo pipefail
-
-          cd ~/dev.nomade-foix.fr
-
-          echo "== Git =="
-          git fetch origin main
-          git reset --hard origin/main
-
-          echo "== Node environment =="
-          source ~/nodevenv/dev.nomade-foix.fr/22/bin/activate
-
-          echo "== Dependencies =="
-          npm install --include=dev
-
-          echo "== Build =="
-          npm run build -- --webpack
-
-          echo "== Restart Passenger =="
-          mkdir -p tmp
-          touch tmp/restart.txt
-
-          echo "== Deployment complete =="
-          REMOTE
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck -- --incremental false
+      - run: node --test scripts/test-deploy-safety.cjs scripts/test-llms.cjs scripts/test-lint-dependencies.cjs scripts/test-lunch-checkout.cjs scripts/test-site-hardening.cjs
+      - run: npm run build

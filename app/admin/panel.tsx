@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import type { Dish, Lang } from '../../lib/menu';
 import './panel.css';
@@ -33,6 +33,18 @@ export default function AdminPanel() {
   const [draft,setDraft] = useState<Dish | null>(null);
   const [message,setMessage] = useState('');
   const [busy,setBusy] = useState(false);
+  const editorRef=useRef<HTMLFormElement>(null);
+  const editorOrigin=useRef<HTMLButtonElement|null>(null);
+  const editorKey=draft ? draft.id||'new' : null;
+  useEffect(()=>{
+    if(editorKey===null)return;
+    const frame=requestAnimationFrame(()=>{
+      editorRef.current?.scrollIntoView({block:'start',behavior:'instant'});
+      editorRef.current?.querySelector('h2')?.focus({preventScroll:true});
+    });
+    return()=>cancelAnimationFrame(frame);
+  },[editorKey]);
+  const closeEditor=()=>{setDraft(null);editorOrigin.current?.focus({preventScroll:true});};
   const reload = useCallback(async () => { setItems(await request('/api/admin/menu')); },[]);
   useEffect(() => { request('/api/admin/session').then(async s => {
     if (!s.configured) setStatus('unconfigured');
@@ -49,7 +61,7 @@ export default function AdminPanel() {
     e.preventDefault(); if (!draft) return; setBusy(true); setMessage('');
     try {
       await request(draft.id ? `/api/admin/menu/${draft.id}` : '/api/admin/menu',{method:draft.id?'PUT':'POST',body:JSON.stringify(draft)});
-      await reload(); setDraft(null); setMessage('Enregistré. La carte est mise à jour.');
+      await reload(); closeEditor(); setMessage('Enregistré. La carte est mise à jour.');
     } catch(e) { setMessage((e as Error).message); } finally { setBusy(false); }
   }
   async function remove(dish: Dish) {
@@ -84,10 +96,10 @@ export default function AdminPanel() {
     {status === 'unconfigured' && <p>Configurez NOMADE_ADMIN_PASSWORD et NOMADE_ADMIN_SECRET (32 caractères minimum) dans les variables d’environnement du serveur.</p>}
     {status === 'locked' && <form className="adminLogin" onSubmit={login}><h2>Connexion</h2><label>Mot de passe<input type="password" autoComplete="current-password" value={password} onChange={e=>setPassword(e.target.value)} required /></label><button disabled={busy}>Se connecter</button></form>}
     {status === 'ready' && <>
-      <div className="adminToolbar"><p>{items.length} position{items.length !== 1 && 's'}</p><Link href="/admin/reservations">Voir les réservations</Link><button onClick={()=>{setDraft(blank());setMessage('')}}>+ Ajouter une position</button><a href="/fr/carte" target="_blank" rel="noreferrer">Voir la carte ↗</a></div>
-      <div className="adminList">{items.map(d => <article key={d.id}><div><strong>{d.translations.fr.name}</strong><small>{d.category} · {d.available?'Disponible':'Indisponible'} {d.signature && '· ★ Accueil'} {d.lunchIncluded && `· Déjeuner ${((d.lunchPriceCents || 0)/100).toFixed(2)} €`}</small></div><button onClick={()=>{setDraft(structuredClone(d));setMessage('')}}>Modifier</button></article>)}</div>
-      {draft && <form className="adminEditor" onSubmit={save}>
-        <div className="adminEditorTop"><h2>{draft.id?'Modifier la position':'Ajouter une position'}</h2><button type="button" onClick={()=>setDraft(null)}>Fermer ×</button></div>
+      <div className="adminToolbar"><p>{items.length} position{items.length !== 1 && 's'}</p><Link href="/admin/reservations">Voir les réservations</Link><button onClick={event=>{editorOrigin.current=event.currentTarget;setDraft(blank());setMessage('')}}>+ Ajouter une position</button><a href="/fr/carte" target="_blank" rel="noreferrer">Voir la carte ↗</a></div>
+      <div className="adminList">{items.map(d => <article key={d.id}><div><strong>{d.translations.fr.name}</strong><small>{d.category} · {d.available?'Disponible':'Indisponible'} {d.signature && '· ★ Accueil'} {d.lunchIncluded && `· Déjeuner ${new Intl.NumberFormat('fr-FR',{style:'currency',currency:'EUR'}).format((d.lunchPriceCents || 0)/100)}`}</small></div><button onClick={event=>{editorOrigin.current=event.currentTarget;setDraft(structuredClone(d));setMessage('')}}>Modifier</button></article>)}</div>
+      {draft && <form ref={editorRef} className="adminEditor" style={{scrollMarginTop:24}} onSubmit={save}>
+        <div className="adminEditorTop"><h2 tabIndex={-1}>{draft.id?'Modifier la position':'Ajouter une position'}</h2><button type="button" onClick={closeEditor}>Fermer ×</button></div>
         <p className="muted">La carte publique affiche le nom, la description et la composition. La photo est utilisée sur l’accueil et dans Déjeuner à emporter. Les prix normaux ne sont pas affichés sur la carte publique.</p>
         <div className="adminFields"><label>Catégorie<select value={draft.category} onChange={e=>set({category:e.target.value})} required aria-describedby="category-help">{categories.map(category=><option key={category} value={category}>{category}</option>)}</select><small id="category-help">Déjeuner : « Plats » pour les plats, « Boissons » pour les boissons.</small></label><label>Ordre d’affichage<input type="number" value={draft.order} onChange={e=>set({order:Number(e.target.value)})} /></label><label>Prix normal (€)<PriceInput key={`${draft.id}-regular`} price={draft.regularPriceCents} onPrice={value=>setPrice('regularPriceCents',value)} /></label></div>
         <p className="muted">Renseignez les traductions pour chaque langue du site. Si une traduction est vide, le texte français est affiché.</p>
