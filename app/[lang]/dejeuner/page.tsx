@@ -5,6 +5,7 @@ import { isSiteLanguage, pageMetadata } from '../../../lib/seo';
 import { readMenu } from '../../../lib/menu';
 import { lunchCatalog, type LunchCatalog } from '../../../lib/lunch-catalog';
 import DejeunerForm from '../../components/dejeuner-form';
+import { lunchHeadlineCss } from '../../../lib/lunch-headline-font';
 
 const meta = {
   fr:{ title:'Déjeuner à emporter | NOMADE — Foix', description:'Composez votre déjeuner à emporter chez NOMADE, avec retrait à Foix et paiement sur place.' },
@@ -19,5 +20,5 @@ export default async function DejeunerPage({params}:{params:Promise<{lang:string
   let catalog:LunchCatalog|null=null;
   try {catalog=lunchCatalog(await readMenu(),lang);}catch{/* Keep the client error/retry fallback available. */}
   const version=createHash('sha256').update(JSON.stringify(catalog)).digest('hex').slice(0,12);
-  return <DejeunerForm key={`${lang}:${version}`} lang={lang} initialMenu={catalog}/>;
+  return <><style>{lunchHeadlineCss}</style><DejeunerForm key={`${lang}:${version}`} lang={lang} initialMenu={catalog}/></>;
 }
