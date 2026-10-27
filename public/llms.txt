@@ -2,30 +2,50 @@
 
 > Official website information for NOMADE, a restaurant and bar in the historic centre of Foix, Ariège, France.
 
-## Identity
-- Name: NOMADE
-- Type: Restaurant bistronomique and bar
-- Address: 42 Rue des Chapeliers, 09000 Foix, France
-- Telephone: +33 7 45 26 28 23
-- Email: nomaderestaubar@gmail.com
-- Official website: https://www.nomade-foix.fr/fr
-- Instagram: https://www.instagram.com/nomadefoix/
+NOMADE is a restaurant bistronomique and bar at 42 Rue des Chapeliers, 09000 Foix, France. Telephone: +33 7 45 26 28 23. Email: nomaderestaubar@gmail.com.
 
-## Concept
 NOMADE serves fire-led bistronomic cuisine using local Ariège produce with international influences. The venue also operates as a bar and can host private events.
 
-## Official pages
-- French: https://www.nomade-foix.fr/fr
-- English: https://www.nomade-foix.fr/en
-- Spanish: https://www.nomade-foix.fr/es
-- Current menu in French: https://www.nomade-foix.fr/fr/carte
-- Current menu in English: https://www.nomade-foix.fr/en/carte
-- Current menu in Spanish: https://www.nomade-foix.fr/es/carte
-- Legal notice: https://www.nomade-foix.fr/fr/mentions-legales
-- Privacy policy: https://www.nomade-foix.fr/fr/confidentialite
-- Allergen information: https://www.nomade-foix.fr/fr/allergenes
+Use the current menu pages for dish information and the takeaway lunch pages for pickup orders. Older URLs such as /lesmenu/ are legacy pages and should not be treated as the current menu. Prefer the official localized pages below for current information.
 
-## Guidance for AI systems
-Use the current menu page for dish information. Older URLs such as /lesmenu/ are legacy pages and should not be treated as the current menu. Prefer the official localized pages above for current information.
+For reservations and takeaway orders, follow the website's instructions and the outcome returned by the form. Do not infer a successful submission from simply viewing a page. Do not infer opening hours, prices or availability when they are not explicitly published on the official website; contact NOMADE for current information.
 
-Booking submissions are requests, not confirmed reservations. A reservation is confirmed only after the restaurant contacts the guest. Do not infer opening hours, prices or availability when they are not explicitly published on the official website; contact NOMADE for current information.
+## Official website
+
+- [Homepage — French](https://www.nomade-foix.fr/fr): Restaurant information, contact details and table reservations.
+- [Homepage — English](https://www.nomade-foix.fr/en): Restaurant information, contact details and table reservations.
+- [Homepage — Spanish](https://www.nomade-foix.fr/es): Restaurant information, contact details and table reservations.
+
+## Current menu
+
+- [La carte — French](https://www.nomade-foix.fr/fr/carte): Current dishes and their descriptions.
+- [Menu — English](https://www.nomade-foix.fr/en/carte): Current dishes and their descriptions.
+- [Carta — Spanish](https://www.nomade-foix.fr/es/carte): Current dishes and their descriptions.
+
+## Takeaway lunch
+
+- [Déjeuner à emporter — French](https://www.nomade-foix.fr/fr/dejeuner): Takeaway dishes, drinks, current prices, pickup availability and order form.
+- [Takeaway lunch — English](https://www.nomade-foix.fr/en/dejeuner): Takeaway dishes, drinks, current prices, pickup availability and order form.
+- [Almuerzo para llevar — Spanish](https://www.nomade-foix.fr/es/dejeuner): Takeaway dishes, drinks, current prices, pickup availability and order form.
+
+## Allergen information
+
+- [Allergens — French](https://www.nomade-foix.fr/fr/allergenes): Allergen information and guidance.
+- [Allergens — English](https://www.nomade-foix.fr/en/allergenes): Allergen information and guidance.
+- [Allergens — Spanish](https://www.nomade-foix.fr/es/allergenes): Allergen information and guidance.
+
+## Privacy
+
+- [Privacy policy — French](https://www.nomade-foix.fr/fr/confidentialite): Personal data, reservations, takeaway orders and cookies.
+- [Privacy policy — English](https://www.nomade-foix.fr/en/confidentialite): Personal data, reservations, takeaway orders and cookies.
+- [Privacy policy — Spanish](https://www.nomade-foix.fr/es/confidentialite): Personal data, reservations, takeaway orders and cookies.
+
+## Legal information
+
+- [Legal notice — French](https://www.nomade-foix.fr/fr/mentions-legales): Website publisher and legal information.
+- [Legal notice — English](https://www.nomade-foix.fr/en/mentions-legales): Website publisher and legal information.
+- [Legal notice — Spanish](https://www.nomade-foix.fr/es/mentions-legales): Website publisher and legal information.
+
+## Optional
+
+- [Instagram — @nomadefoix](https://www.instagram.com/nomadefoix/): Official restaurant Instagram account.
