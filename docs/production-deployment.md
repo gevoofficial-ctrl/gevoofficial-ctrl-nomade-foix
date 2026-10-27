@@ -38,3 +38,12 @@ complete. Independently check mobile and desktop UI, calendars, language links,
 prices and console errors. Existing backup cron remains a separate safeguard.
 Never print environment values, SMTP credentials, reservation tokens or order
 records into deployment logs.
+
+## Headline font asset
+
+The first-screen NOMADE text uses an inline 2.04 KB subset of the
+existing Playfair glyphs. Other headings retain the full font. The derivative is
+renamed NOMADE Headline, with the original SIL OFL retained in public/fonts.
+To regenerate it, install fonttools and brotli in a temporary Python environment
+and run scripts/build-headline-font.py. Python packages are not runtime or CI
+dependencies. The generator verifies that the six original glyph widths and outlines match at weight 500.

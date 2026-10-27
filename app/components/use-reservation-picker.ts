@@ -26,11 +26,10 @@ export function useReservationPicker(open:boolean, close:()=>void, trigger:RefOb
       const height=panel.getBoundingClientRect().height;
       const below=window.innerHeight-rect.bottom-gap-margin, above=rect.top-gap-margin;
       const down=height<=below||below>=above;
-      const available=Math.max(44,down?below:above);
-      const shown=Math.min(height,available);
-      panel.style.maxHeight=`${available}px`;
+      // If neither side has enough room, shift the entire popup inside the
+      // viewport instead of clipping its final week to the space under a field.
       panel.style.left=`${Math.max(margin,Math.min(rect.left,window.innerWidth-panel.getBoundingClientRect().width-margin))}px`;
-      panel.style.top=`${Math.max(margin,Math.min(down?rect.bottom+gap:rect.top-gap-shown,window.innerHeight-shown-margin))}px`;
+      panel.style.top=`${Math.max(margin,Math.min(down?rect.bottom+gap:rect.top-gap-height,window.innerHeight-height-margin))}px`;
     };
     const frame=requestAnimationFrame(()=>{
       place();
