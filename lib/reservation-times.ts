@@ -11,7 +11,6 @@ export const reservationTimeSlots = [
   '20:30',
   '21:00',
   '21:30',
-  '22:00',
 ] as const;
 
 export function isReservationTime(value: unknown): value is (typeof reservationTimeSlots)[number] {
