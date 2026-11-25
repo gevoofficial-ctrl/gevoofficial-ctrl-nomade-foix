@@ -48,6 +48,24 @@
 .homeAdminPreview img {
   object-fit: cover;
 }
+.homeAdmin .homeAdminUpload {
+  position: relative;
+  padding: 10px 12px;
+  border: 1px solid #82745d;
+  background: #c9b28a;
+  color: #15120e;
+  text-align: center;
+}
+.homeAdminUpload input[type="file"] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.homeAdminUpload:focus-within {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
 .homeAdmin .homeAdminSecondary {
   background: transparent;
   color: var(--paper);

@@ -161,8 +161,9 @@ export default function HomeEditor() {
                         <Image src={src} alt={slot === 'hero' ? '' : draft.alt[lang][slot]} fill sizes="(max-width: 620px) 88vw, 300px" />
                       </div>
                       {slot === 'hero' && <small>{draft.photos.hero ? 'Photo à la place de la vidéo.' : 'Vidéo d’origine. Importez une photo pour la remplacer.'}</small>}
-                      <label>Importer une photo · {label}
-                        <input type="file" accept="image/jpeg,image/png,image/webp" onChange={event => {
+                      <label className="homeAdminUpload">
+                        <span aria-hidden="true">Choisir une photo</span>
+                        <input type="file" aria-label={`Importer une photo · ${label}`} accept="image/jpeg,image/png,image/webp" onChange={event => {
                           const file = event.currentTarget.files?.[0];
                           event.currentTarget.value = '';
                           if (file) void upload(slot, file);
