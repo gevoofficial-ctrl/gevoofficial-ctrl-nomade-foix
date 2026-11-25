@@ -53,7 +53,7 @@ const archive=(sha,destination)=>{
 async function exists(file){try{await fs.stat(file);return true;}catch(error){if(error.code==='ENOENT')return false;throw error;}}
 async function check(base,withAvailability){
   for(const route of ['/fr','/en/dejeuner','/es/dejeuner']){
-    const response=await fetch(base+route,{signal:AbortSignal.timeout(20000)});
+    const response=await fetch(base+route,{headers:{'Cache-Control':'no-cache'},signal:AbortSignal.timeout(20000)});
     const html=await response.text();
     if(response.status!==200||!html.includes('NOMADE'))throw new Error(`Page health failed: ${route}`);
     if(route==='/fr'){
@@ -68,8 +68,18 @@ async function check(base,withAvailability){
   const body=await response.json();
   if(!Array.isArray(body.dishes)||!Array.isArray(body.drinks)||!Array.isArray(body.closedDates)||body.pickupSlots?.length!==13||body.pickupSlots[0]!=='12:00'||body.pickupSlots.at(-1)!=='14:00')throw new Error('Unexpected lunch API response');
 }
-async function checkTwice(base,availability){
-  try{await check(base,availability);}catch{await new Promise(resolve=>setTimeout(resolve,2000));await check(base,availability);}
+async function waitForHealth(base,availability){
+  // Passenger reloads lazily and existing workers can finish requests after a restart.
+  const deadline=Date.now()+(availability?30000:2000);
+  for(;;){
+    try{
+      await check(base,availability);
+      return;
+    }catch(error){
+      if(Date.now()>=deadline)throw error;
+      await new Promise(resolve=>setTimeout(resolve,2000));
+    }
+  }
 }
 async function restart(){await fs.writeFile(path.join(root,'tmp','restart.txt'),new Date().toISOString());}
 try{
@@ -87,7 +97,7 @@ try{
   probe=spawn(process.execPath,[path.join(stage,'node_modules/next/dist/bin/next'),'start',stage,'--hostname','127.0.0.1','--port',String(probePort)],{cwd:stage,env:stageEnv,stdio:'ignore'});
   await new Promise((resolve,reject)=>{const timer=setTimeout(resolve,1500);probe.once('error',error=>{clearTimeout(timer);reject(error);});});
   if(probe.exitCode!==null)throw new Error('Prepared application did not start');
-  await checkTwice(`http://127.0.0.1:${probePort}`,false);
+  await waitForHealth(`http://127.0.0.1:${probePort}`,false);
   probe.kill();probe=undefined;
   // Keep previous immutable chunks for visitors with an already-open page.
   execFileSync('rsync',['-a','--ignore-existing',path.join(root,'.next/static/'),path.join(stage,'.next/static/')]);
@@ -100,7 +110,7 @@ try{
   await fs.rename(path.join(stage,'.next'),path.join(root,'.next'));
   git('reset','--mixed',target); // updates the index/HEAD only; preserves menu and Passenger files
   await restart();
-  await checkTwice('https://www.nomade-foix.fr',true);
+  await waitForHealth('https://www.nomade-foix.fr',true);
   console.log('DEPLOY_VERIFIED',git('rev-parse','HEAD'),'rollback directory',backup);
 }catch(error){
   console.error('DEPLOY_FAILED',error.message);
@@ -120,7 +130,7 @@ try{
     git('reset','--mixed',before);
     await restart();
     expectedScripts=[];
-    await checkTwice('https://www.nomade-foix.fr',true);
+    await waitForHealth('https://www.nomade-foix.fr',true);
     console.error('ROLLBACK_VERIFIED',before);
   }else console.error('PREPARATION_FAILED: serving build and dependencies were not changed');
   process.exitCode=1;
