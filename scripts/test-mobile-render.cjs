@@ -18,8 +18,14 @@ async function get(path) {
     assert.ok(!html.includes('w=3840'));
     for(const alternate of ['fr','en','es'])assert.ok(html.includes(`hrefLang="${alternate}"`));
     const home=await(await get(`/${lang}`)).text();
-    assert.ok(home.includes('poster="/video/nomade-hero-poster-v2.webp"'));
-    console.log(`PASS ${lang}: ${items.length} initial HTML cards, responsive first image, hreflang, optimized hero poster`);
+    if(home.includes('class="heroStill"')){
+      assert.match(home,/<img[^>]*class="heroStill"[^>]*sizes="100vw"[^>]*srcSet=/);
+      assert.ok(home.includes('class="heroMedia heroMediaVideo heroMediaStill"'));
+      assert.ok(!home.includes('poster="/video/nomade-hero-poster-v2.webp"'));
+    }else{
+      assert.ok(home.includes('poster="/video/nomade-hero-poster-v2.webp"'));
+    }
+    console.log(`PASS ${lang}: ${items.length} initial HTML cards, responsive first image, hreflang, responsive hero media`);
   }
   for(const [path,limit] of [['/images/nomade-print-mobile-v2.webp',80000],['/video/nomade-hero-poster-v2.webp',75000],['/video/nomade-hero-mobile-v1.mp4',650000]]) {
     const response=await get(path);

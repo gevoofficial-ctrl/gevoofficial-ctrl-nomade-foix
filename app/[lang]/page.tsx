@@ -53,6 +53,7 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
   const t = { ...navigation[lang], ...content.texts[lang] };
   const alt = content.alt[lang];
   const photo = (slot: HomePhoto) => content.photos[slot] || homePhotoSlots[slot].original;
+  const heroPhoto = photo('hero');
   const menu=sortedMenu(menuItems);
   const signatures=menu.filter(dish => dish.signature && dish.available).slice(0,2);
   const dishes=signatures.length > 0
@@ -61,15 +62,15 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
   const videoFallback=videoFallbackCopy[lang];
   const navLinks = ['#house', '#menu', '#events', '#contact'];
   return <main lang={lang}>
-    {!photo('hero') && <link rel="preload" as="image" href="/video/nomade-hero-poster-v2.webp" fetchPriority="high" />}
+    {!heroPhoto && <link rel="preload" as="image" href="/video/nomade-hero-poster-v2.webp" fetchPriority="high" />}
     <header className="header"><Link className="logo" href={`/${lang}#top`} aria-label="Nomade"><Image src="/nomade-logo-light.svg" alt="NOMADE" width={2933} height={1000} priority /></Link><nav>{t.nav.map((n,i)=><a key={n} href={navLinks[i]}>{n}</a>)}<Link href={`/${lang}/dejeuner`}>{t.lunch}</Link></nav><div className="tools"><div className="langs">{(['fr','en','es'] as const).map(l=><Link key={l} className={lang===l?'active':''} href={`/${l}`}>{l.toUpperCase()}</Link>)}</div></div></header>
     <MobileMenu>
       <summary aria-label="Menu"><span></span><span></span><span></span></summary>
       <div className="mobileNav">{t.nav.map((n,i)=><a key={n} href={navLinks[i]} aria-label={n}>{n}</a>)}<Link href={`/${lang}/dejeuner`} aria-label={t.lunch}>{t.lunch}</Link><div className="langs mobileLangs">{(['fr','en','es'] as const).map(l=><Link key={l} className={lang===l?'active':''} href={`/${l}`} aria-label={l.toUpperCase()}>{l.toUpperCase()}</Link>)}</div></div>
     </MobileMenu>
 
-    <section id="top" className="hero"><div className="heroMedia heroMediaVideo">{photo('hero')
-        ? <Image className="heroStill" src={photo('hero')} alt="" fill sizes="100vw" preload />
+    <section id="top" className="hero"><div className={heroPhoto ? "heroMedia heroMediaVideo heroMediaStill" : "heroMedia heroMediaVideo"}>{heroPhoto
+        ? <Image className="heroStill" src={heroPhoto} alt="" fill sizes="100vw" preload />
         : <HeroVideo fallback={videoFallback} lang={lang} />}</div><div className="heroContent"><span>{t.heroKicker}</span><h1>NOMADE<span className="srOnly"> — {t.seoH1}</span></h1><p className="heroTitle">{t.heroTitle}</p><p className="heroSub">{t.heroSub}</p><a className="button" href="#reservation">{t.reserve}<ArrowUpRight size={16}/></a></div><a className="scroll" href="#house"><ArrowDown size={16}/>{t.discover}</a></section>
 
     <section id="house" className="split section printSection"><div className="houseCopy"><p className="eyebrow">01 / NOMADE</p><h2>{t.fire}</h2><p className="lead">{t.fireText}</p><a className="textLink" href="#menu">{t.signatures} <ArrowUpRight size={16}/></a></div><div className="venuePhoto housePhoto"><Image src={photo('house')} alt={alt.house} fill sizes="(max-width: 800px) 88vw, 42vw" /></div></section>

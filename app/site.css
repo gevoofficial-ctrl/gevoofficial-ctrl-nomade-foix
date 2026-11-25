@@ -90,7 +90,7 @@
 .heroMediaVideo::before{content:'';z-index:1;background:linear-gradient(90deg,rgba(8,7,6,.84),rgba(8,7,6,.46) 56%,rgba(8,7,6,.66)),linear-gradient(0deg,rgba(8,7,6,.88),rgba(8,7,6,.18) 48%,rgba(8,7,6,.3))}
 .heroContent,.scroll{z-index:2}
 @media(min-width:801px){
-  .heroMediaVideo{background:#19120d url('/video/nomade-hero-poster-v2.webp') 55% center/cover no-repeat}
+  .heroMediaVideo:not(.heroMediaStill){background:#19120d url('/video/nomade-hero-poster-v2.webp') 55% center/cover no-repeat}
   .heroVideo{opacity:0;transition:opacity .42s ease-out}
   .heroVideo.heroVideoReady{opacity:1}
 }

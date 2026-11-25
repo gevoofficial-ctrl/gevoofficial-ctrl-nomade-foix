@@ -25,7 +25,17 @@ test('deploy refuses a commit modifying live menu before any dependency/build ch
 test('failed preparation preserves live build, dependencies, admin menu, orders and HEAD',t=>{
   const q=fixture(t);fs.writeFileSync(path.join(q.root,'code.txt'),'candidate');q.git('add','code.txt');q.git('commit','-qm','candidate');const candidate=q.git('rev-parse','HEAD');q.git('update-ref','refs/remotes/origin/main',candidate);q.git('checkout','--detach',q.before);
   fs.writeFileSync(path.join(q.root,'data/menu.json'),'[{"id":"edited-in-admin"}]');fs.writeFileSync(path.join(q.root,'data/dejeuner-orders.json'),'{"nextNumber":72,"idempotency":{}}');
-  const result=spawnSync(process.execPath,[script,q.root,candidate,path.join(q.temp,'private-backups')],{encoding:'utf8',env:{...process.env,npm_config_cache:path.join(q.temp,'npm-cache')},timeout:30000});
+  const bin=path.join(q.temp,'bin');
+  const wrapperCalled=path.join(q.temp,'wrapper-called');
+  fs.mkdirSync(bin);
+  fs.writeFileSync(path.join(bin,'npm'),'#!/bin/sh\ntouch "$WRAPPER_CALLED"\nexit 99\n',{mode:0o700});
+  const result=spawnSync(process.execPath,[script,q.root,candidate,path.join(q.temp,'private-backups')],{
+    encoding:'utf8',
+    env:{...process.env,PATH:bin+path.delimiter+process.env.PATH,WRAPPER_CALLED:wrapperCalled,npm_config_cache:path.join(q.temp,'npm-cache')},
+    timeout:30000,
+  });
+  assert.equal(fs.existsSync(wrapperCalled),false,'installation must bypass the Passenger npm wrapper');
+  assert.match(result.stdout,/process\.exit\(23\)/,'failure must reach the staged build');
   assert.notEqual(result.status,0);assert.match(result.stderr,/PREPARATION_FAILED/);assert.match(result.stdout,/BACKUP_AND_RESTORE_VERIFIED/);
   assert.equal(q.git('rev-parse','HEAD'),q.before);assert.equal(fs.readFileSync(path.join(q.root,'code.txt'),'utf8'),'old version');
   assert.equal(fs.readFileSync(path.join(q.root,'data/menu.json'),'utf8'),'[{"id":"edited-in-admin"}]');assert.equal(JSON.parse(fs.readFileSync(path.join(q.root,'data/dejeuner-orders.json'))).nextNumber,72);

@@ -23,6 +23,10 @@ for(const name of changes.filter(name=>!existingPaths.includes(name))){
 }
 if(!(await fs.lstat(path.join(root,'node_modules'))).isSymbolicLink())throw new Error('Expected cPanel node_modules symlink');
 const modules=await fs.realpath(path.join(root,'node_modules'));
+// The cPanel npm wrapper can redirect installs into Passenger's live dependencies.
+const node=await fs.realpath(process.execPath);
+const npmCli=await fs.realpath(path.join(path.dirname(node),'npm'));
+if(!npmCli.endsWith('/npm/bin/npm-cli.js'))throw new Error('Expected the npm CLI bundled with Node.js');
 const parent=path.resolve(process.argv[4]||path.join(os.homedir(),'.nomade-deployments'));
 if(parent===root||parent.startsWith(root+path.sep))throw new Error('Deployments must be private and outside the web root');
 await fs.mkdir(parent,{recursive:true,mode:0o700});await fs.chmod(parent,0o700);
@@ -77,8 +81,8 @@ try{
   await fs.rm(path.join(stage,'data'),{recursive:true}); // only the new Git archive's stale fixture
   await fs.symlink(path.join(root,'data'),path.join(stage,'data'),'dir');
   console.log('PREPARE dependencies and build; production continues serving its old build');
-  await run('npm',['ci','--include=dev','--no-fund']);
-  await run('npm',['run','build']);
+  await run(node,[npmCli,'ci','--include=dev','--no-fund']);
+  await run(node,[npmCli,'run','build']);
   const probePort=3137;
   probe=spawn(process.execPath,[path.join(stage,'node_modules/next/dist/bin/next'),'start',stage,'--hostname','127.0.0.1','--port',String(probePort)],{cwd:stage,env:stageEnv,stdio:'ignore'});
   await new Promise((resolve,reject)=>{const timer=setTimeout(resolve,1500);probe.once('error',error=>{clearTimeout(timer);reject(error);});});
