@@ -35,8 +35,11 @@ const lock=await fs.open(lockPath,'wx',0o600);
 let modulesMoved=false, buildMoved=false, sourceTouched=false;
 let probe;
 let expectedScripts=[];
+// Passenger's NODE_PATH can point at the live dependency tree.
+const stageEnv={...process.env,NODE_ENV:'production'};
+delete stageEnv.NODE_PATH;
 const run=(file,args,cwd=stage)=>new Promise((resolve,reject)=>{
-  const child=spawn(file,args,{cwd,env:{...process.env,NODE_ENV:'development'},stdio:'inherit'});
+  const child=spawn(file,args,{cwd,env:stageEnv,stdio:'inherit'});
   child.on('error',reject);child.on('exit',code=>code===0?resolve():reject(new Error(`${file} failed (${code})`)));
 });
 const archive=(sha,destination)=>{
@@ -77,7 +80,7 @@ try{
   await run('npm',['ci','--include=dev','--no-fund']);
   await run('npm',['run','build']);
   const probePort=3137;
-  probe=spawn(process.execPath,[path.join(stage,'node_modules/next/dist/bin/next'),'start',stage,'--hostname','127.0.0.1','--port',String(probePort)],{cwd:stage,env:{...process.env,NODE_ENV:'production'},stdio:'ignore'});
+  probe=spawn(process.execPath,[path.join(stage,'node_modules/next/dist/bin/next'),'start',stage,'--hostname','127.0.0.1','--port',String(probePort)],{cwd:stage,env:stageEnv,stdio:'ignore'});
   await new Promise((resolve,reject)=>{const timer=setTimeout(resolve,1500);probe.once('error',error=>{clearTimeout(timer);reject(error);});});
   if(probe.exitCode!==null)throw new Error('Prepared application did not start');
   await checkTwice(`http://127.0.0.1:${probePort}`,false);
