@@ -156,3 +156,5 @@ footer a,footer button{display:inline-flex;align-items:center;min-height:44px}
 
 .heroVideoControl{position:absolute;right:4vw;bottom:32px;z-index:3;width:44px;height:44px;border:1px solid rgba(233,225,209,.65);background:rgba(13,12,10,.7);color:var(--paper);cursor:pointer;display:grid;place-items:center;font-size:17px}.heroVideoControl:focus-visible{outline:2px solid var(--accent);outline-offset:4px}.heroVideoControl:hover{background:var(--paper);color:var(--bg)}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.heroVideo{transition:none}.fireOrb{animation:none}}
+
+.heroStill{object-fit:cover;object-position:55% center}
